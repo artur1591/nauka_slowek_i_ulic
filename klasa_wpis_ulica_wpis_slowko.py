@@ -1,0 +1,99 @@
+'''
+obiekty klasy WpisUlica i WpisSlowko
+'''
+class WpisUlica:
+    "..."
+    def __init__(self,one,tryb='A',ile_x=0):
+        ""
+        if not isinstance(one,str):
+            raise TypeError('pierwszy ma być str.jest',type(one))
+
+        if tryb not in ['A','B','C']:
+            raise ValueError('tryb musi być A/B/C. jest',tryb)
+
+        if ile_x<0:
+            raise ValueError('ile_x musi być nieujemne.jest',ile_x)
+
+        self.pierwszy=one
+        self.tryb=tryb
+        self.ile_razy_wylos=ile_x
+
+    def __eq__(self,inny):
+        '''
+        pełne sprawdzanie. jak potrzeba tylko niektóre składowe to ręcznie zrób
+        '''
+        #print('operator eq ulicy')
+        if isinstance(inny,WpisUlica):
+            ile_true=0
+            if self.pierwszy==inny.pierwszy:
+                ile_true+=1
+            if self.tryb==inny.tryb:
+                ile_true+=1
+            if self.ile_razy_wylos==inny.ile_razy_wylos:
+                ile_true+=1
+
+            return ile_true==3
+        raise TypeError('porównuje WpisUlica z typem',type(inny))
+
+    def __lt__(self,inny):
+        '''
+        do sortowania. zauważ że sprawdza tylko składową pierwszy
+        '''
+        return self.pierwszy<inny.pierwszy
+
+    def __str__(self):
+        '''
+        wykorzystywane do zapisywania ulic(taki operator wypisywania)
+        po pierwszy jest znak |
+        '''
+        return self.pierwszy+'|'+self.tryb+' '+str(self.ile_razy_wylos)
+
+    def __repr__(self):
+        return self.pierwszy+'|'+self.tryb+' '+str(self.ile_razy_wylos)
+
+class WpisSlowko(WpisUlica):
+    "rozszerza WpisUlica"
+    def __init__(self,one,two,tryb='A',ile_x=0):
+        if not isinstance(one,str) or not isinstance(two,str):
+            raise ValueError('pierwszy i drugi musi być str.jest',type(one),type(two))
+
+        WpisUlica.__init__(self,one,tryb,ile_x)
+        self.drugi=two
+
+    def __eq__(self,inny):
+        '''
+        pełne sprawdzanie. jak potrzeba tylko niektóre składowe to ręcznie zrób
+        '''
+        #print('operator eq slowka')
+        if isinstance(inny,WpisSlowko):
+            ile_true=0
+            if self.pierwszy==inny.pierwszy:
+                ile_true+=1
+            if self.drugi==inny.drugi:
+                ile_true+=1
+            if self.tryb==inny.tryb:
+                ile_true+=1
+            if self.ile_razy_wylos==inny.ile_razy_wylos:
+                ile_true+=1
+
+            return ile_true==4
+        raise TypeError('porównuje WpisSlowko z typem',type(inny))
+
+    def __lt__(self,inny):
+        '''
+        do sortowania. zauważ że sprawdza tylko składową pierwszy
+        '''
+        return self.pierwszy<inny.pierwszy
+
+    def __str__(self):
+        '''
+        wykorzystywane do zapisywania slowek (takie operator wypisywania)
+        po pierwszy jest znak |
+        '''
+        return self.pierwszy+'|'+self.drugi+' '+self.tryb+' '+str(self.ile_razy_wylos)
+
+    def __repr__(self):
+        return self.pierwszy+'|'+self.drugi+' '+self.tryb+' '+str(self.ile_razy_wylos)
+
+if __name__=='__main__':
+    print('---są testy dla tych klas---')

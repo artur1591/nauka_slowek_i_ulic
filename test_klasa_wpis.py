@@ -1,0 +1,103 @@
+'''
+testy dla klas WpisUlica i WpisSlowko
+'''
+import unittest as UT
+import klasa_wpis_ulica_wpis_slowko as KW
+
+class TestKlasWpisObu(UT.TestCase):
+    "..."
+    def test_init_wpis_ulica_arg_konieczne(self):
+        "domyślne tryb i ile_razy_wylos"
+        one=KW.WpisUlica("Czerwona")
+        self.assertTrue(one.tryb in ['A','B','C'])
+        self.assertEqual(one.ile_razy_wylos,0)
+        self.assertIsInstance(one.pierwszy,str)
+
+    def test_init_wpis_ulica_arg_pelne_poprawne(self):
+        "pełny zestaw danych WpisUlica"
+        one=KW.WpisUlica('Zielona','B',2)
+        self.assertTrue(one.tryb in ['A','B','C'])
+        self.assertTrue(one.ile_razy_wylos>=0)
+
+    def test_init_wpis_ulica_arg_pelne_zle(self):
+        "wyjątki powinny być"
+        with self.assertRaises(ValueError):
+            KW.WpisUlica("Jasna","F",2)
+            KW.WpisUlica("Ciemna","A",-2)
+
+        with self.assertRaises(TypeError):
+            KW.WpisUlica(123,'C',34)
+            KW.WpisSlowko(123,45,'B',0)
+
+    def test_init_wpis_slowko_arg_pelne_dobre(self):
+        "sprawdza typy ustawione w init"
+        one=KW.WpisSlowko("one","jeden","A",0)
+        self.assertIsInstance(one.pierwszy,str)
+        self.assertIsInstance(one.drugi,str)
+        self.assertIsInstance(one.tryb,str)
+        self.assertIsInstance(one.ile_razy_wylos,int)
+
+    def test_init_wpis_slowko_arg_zle(self):
+        "wyjątki powinny być"
+        with self.assertRaises(ValueError):
+            KW.WpisSlowko(3,5,'A')
+            KW.WpisSlowko(3,5,'A',2)
+            KW.WpisSlowko(3,5)
+
+    def test__eq__ulic(self):
+        "sprawdza wszystkie składowe"
+        one=KW.WpisUlica("rf")
+        two=KW.WpisUlica("rf")
+        self.assertEqual(one,two)
+
+        three=KW.WpisUlica('rf','A',2)
+        four=KW.WpisUlica('rf','A',0)
+        self.assertNotEqual(three,four)
+
+    def test__lt__ulic(self):
+        "sprawdza tylko składową pierwszy"
+
+        one=KW.WpisUlica("gvdi")
+        two=KW.WpisUlica("harf")
+        self.assertLess(one,two)
+
+        one=KW.WpisUlica("zkkddgvdi")
+        two=KW.WpisUlica("harf")
+        self.assertLess(two,one)
+
+        one=KW.WpisUlica("askjif","B",10)
+        two=KW.WpisUlica("bieloa","A",1)
+        self.assertLess(one,two)
+
+    def test__eq__slowek(self):
+        "sprawdza wszystkie składowe"
+
+        one=KW.WpisSlowko("rf","wa")
+        two=KW.WpisSlowko("rf","wa")
+        self.assertEqual(one,two)
+
+        one=KW.WpisSlowko("rf","wa","A",0)
+        two=KW.WpisSlowko("rf","wa","A",3)
+        self.assertNotEqual(one,two)
+
+        three=KW.WpisSlowko("rf","gv","A",2)
+        four=KW.WpisSlowko("rf","31","A",0)
+        self.assertNotEqual(three,four)
+
+    def test__lt__slowek(self):
+        "sprawdza tylko skłądową pierwszy"
+
+        one=KW.WpisSlowko("rf","wa")
+        two=KW.WpisSlowko("rf2","wa")
+        self.assertLess(one,two)
+
+        one=KW.WpisSlowko("drf","wa")
+        two=KW.WpisSlowko("rf","wa")
+        self.assertLess(one,two)
+
+        one=KW.WpisSlowko("ygdrf","wa")
+        two=KW.WpisSlowko("rf","wa")
+        self.assertLess(two,one)
+
+if __name__=='__main__':
+    UT.main()
