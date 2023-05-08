@@ -613,6 +613,7 @@ class TestKlasaLogika(UT.TestCase):
         #print('co jest',self.lista_wpisow_ulic)
 
         #podmieniam na nowy/nieistniejacy
+        stare_ulice=CO.deepcopy(self.logika.lista_ulic)
         stary1=CO.deepcopy(self.logika.lista_ulic[1])
         #print('stary1',stary1)
         nowy1=KW.WpisUlica("cdr","A",3)
@@ -620,6 +621,8 @@ class TestKlasaLogika(UT.TestCase):
         wynik1=self.logika.zmien_wpis(stary1,nowy1)
         #print('wynik1',wynik1)
         self.assertTrue(wynik1)
+        nowe_ulice=self.logika.lista_ulic
+        self.assertEqual(len(stare_ulice),len(nowe_ulice))
         #print('po zamianie',self.logika.lista_ulic)
 
         #proba zamiany na juz istniejacy na liscie
@@ -641,8 +644,13 @@ class TestKlasaLogika(UT.TestCase):
         ""
         #print('R=',len(self.logika.lista_slowek))
         #kasowanie istniejacego
+        stare_slowka=CO.deepcopy(self.logika.lista_slowek)
+        #print('stare_slowka',stare_slowka)
         wynik1=self.logika.kasuj_wpis(self.logika.lista_slowek[1])
         self.assertTrue(wynik1)
+        nowe_slowka=self.logika.lista_slowek
+        #print('nowe_slowka',nowe_slowka)
+        self.assertEqual(len(stare_slowka)-1,len(nowe_slowka))
 
         #kasowanie nieistniejacego
         nieistniejacy=KW.WpisSlowko("piłka","ball")
@@ -654,11 +662,16 @@ class TestKlasaLogika(UT.TestCase):
             self.logika.kasuj_wpis("Krystyna")
 
     def test_kasuj_wpis_ulica(self):
-        ""
-        #print('R=',len(self.logika.lista_ulic))
+        "kasuj: istniejacy,nieistniejacy i zły typ do skasowanie"
+
         #kasowanie istniejacego
+        stare_ulice=CO.deepcopy(self.logika.lista_ulic)
+        #print('\nstare_ulice',stare_ulice)
         wynik1=self.logika.kasuj_wpis(self.logika.lista_ulic[1])
         self.assertTrue(wynik1)
+        nowe_ulice=self.logika.lista_ulic
+        #print('nowe_ulice',nowe_ulice)
+        self.assertEqual(len(stare_ulice)-1,len(nowe_ulice))
 
         #kasowanie nieistniejacego
         nieistniejacy=KW.WpisUlica("piłkarska")
@@ -670,40 +683,50 @@ class TestKlasaLogika(UT.TestCase):
             self.logika.kasuj_wpis("Krystyna")
 
     def test_czy_lista_slowek_unikaty(self):
-        "po wielu operacjach powinny być unikaty w lista_slowek i plik slowka"
+        "po wielu operacjach powinny być unikaty w lista_slowek i pliku ze slowkami"
 
         #1.to co jest po operacjach na wpisach
-        rozmiar_listy_slowek=len(self.logika.lista_slowek)
-        rozmiar_unikalnej_listy_slowek=len(NP.unique(self.logika.lista_slowek))
+        rozmiar_listy_slowek1=len(self.logika.lista_slowek)
+        rozmiar_unikalnej_listy_slowek1=len(NP.unique(self.logika.lista_slowek))
 
-        #print('rozmiar_listy_slowek',rozmiar_listy_slowek)
-        #print('rozmiar unikalna_lista',rozmiar_unikalnej_listy_slowek)
-        self.assertEqual(rozmiar_listy_slowek,rozmiar_unikalnej_listy_slowek)
+        #print('rozmiar_listy_slowek1',rozmiar_listy_slowek1)
+        #print('rozmiar_unikalnej_listy_slowek1',rozmiar_unikalnej_listy_slowek1)
+        self.assertEqual(rozmiar_listy_slowek1,rozmiar_unikalnej_listy_slowek1)
 
         #2.porównanie z tym co zapisał w plikach
         self.logika.wczytaj_slowka()
         rozmiar_listy_slowek2=len(self.logika.lista_slowek)
         rozmiar_unikalnej_listy_slowek2=len(NP.unique(self.logika.lista_slowek))
 
+        #print('rozmiar_listy_slowek2',rozmiar_listy_slowek2)
+        #print('rozmiar_unikalnej_listy_slowek2',rozmiar_unikalnej_listy_slowek2)
         self.assertEqual(rozmiar_listy_slowek2,rozmiar_unikalnej_listy_slowek2)
 
+        #porównanie pamięci z plikiem
+        self.assertEqual(rozmiar_listy_slowek1,rozmiar_listy_slowek2)
+
     def test_czy_lista_ulic_unikaty(self):
-        "po wielu operacjach powinny być unikaty w lista_ulic i plik ulice"
+        "po wielu operacjach powinny być unikaty w lista_ulic i pliku z ulicami"
 
         #1.to co jest po operacjach na wpisach
-        rozmiar_listy_ulic=len(self.logika.lista_ulic)
-        rozmiar_unikalnej_listy_ulic=len(NP.unique(self.logika.lista_ulic))
+        rozmiar_listy_ulic1=len(self.logika.lista_ulic)
+        rozmiar_unikalnej_listy_ulic1=len(NP.unique(self.logika.lista_ulic))
 
-        #print('rozmiar_listy_ulic',rozmiar_listy_ulic)
-        #print('rozmiar_unikalnej_listy_ulic',rozmiar_unikalnej_listy_ulic)
-        self.assertEqual(rozmiar_listy_ulic,rozmiar_unikalnej_listy_ulic)
+        #print('rozmiar_listy_ulic1',rozmiar_listy_ulic1)
+        #print('rozmiar_unikalnej_listy_ulic1',rozmiar_unikalnej_listy_ulic1)
+        self.assertEqual(rozmiar_listy_ulic1,rozmiar_unikalnej_listy_ulic1)
 
         #2.porównanie z tym co zapisał w plikach
         self.logika.wczytaj_ulice()
         rozmiar_listy_ulic2=len(self.logika.lista_ulic)
         rozmiar_unikalnej_listy_ulic2=len(NP.unique(self.logika.lista_ulic))
+        #print('rozmiar_listy_ulic2',rozmiar_listy_ulic2)
+        #print('rozmiar_unikalnej_listy_ulic2',rozmiar_unikalnej_listy_ulic2)
 
         self.assertEqual(rozmiar_listy_ulic2,rozmiar_unikalnej_listy_ulic2)
+
+        #porównanie pamięci z plikiem
+        self.assertEqual(rozmiar_listy_ulic1,rozmiar_listy_ulic2)
 
     def test_zwroc_ust_log_do_zapisu(self):
         "do zapisu ustawienia.xml potrzebne ustawienia klasy Logika"
