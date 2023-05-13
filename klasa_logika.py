@@ -146,7 +146,7 @@ class Logika:
 
         #jeżeli ile_slowek/ile_ulic w danym trybie SĄ to proporcje zachowuje
         #jeśli brak to 100% danego
-        ile_zrobic=8
+        ile_zrobic=10
         ile_ulic=0
         ile_slowek=0
 
@@ -324,6 +324,7 @@ class Logika:
         konwencja trybu z dużej czyli A lub B lub C
         zwraca True jak sie udało.
         False jak nie
+        jak przydziela nowy tryb do zeruje ile_razy_wylos
         po wykonaniu zmiany trybu aktualizaje lista_slowek/ulic
         '''
         if not na_jaki in ['A','B','C']:
@@ -334,14 +335,15 @@ class Logika:
         dotychczasowy=self.biezacy_wpis
         #print('dotychczasowy',dotychczasowy)
 
-        #aktualizacja trybu
+        #aktualizacja trybu + ile_razy_wylos zeruj
         self.biezacy_wpis.tryb=na_jaki
+        self.biezacy_wpis.ile_razy_wylos=0
 
         poprawiony=self.biezacy_wpis
         #print('poprawiony',poprawiony)
 
         #aktualizuje w lista_*
-        #print(self.zmien_wpis(dotychczasowy,poprawiony))
+        self.zmien_wpis(dotychczasowy,poprawiony)
 
     def cofnij_ilosc_wylos_biez_wpisu_lo(self):
         "dla bieżącego wpisu dekrementuj ile_razy_wylos w self.lista_slowek/ulic"

@@ -454,23 +454,32 @@ class TestKlasaLogika(UT.TestCase):
         #inicjalizacja biezacego wpisu
         self.logika.biezacy_wpis=RA.choice(self.logika.lista_slowek)
         #print('1biezacy',self.logika.biezacy_wpis)
+        stara=CO.deepcopy(self.logika.lista_slowek)
 
         #teraz zmieniam tryb dla biezacego: daje na nastepny(A->B,B->C,C->A)
         if self.logika.biezacy_wpis.tryb=='A':
             self.logika.ustaw_tryb_biezacego_wpisu('B')
             self.assertEqual(self.logika.biezacy_wpis.tryb,'B')
+            self.assertEqual(self.logika.biezacy_wpis.ile_razy_wylos,0)
         elif self.logika.biezacy_wpis.tryb=='B':
             self.logika.ustaw_tryb_biezacego_wpisu('C')
             self.assertEqual(self.logika.biezacy_wpis.tryb,'C')
+            self.assertEqual(self.logika.biezacy_wpis.ile_razy_wylos,0)
         else:
             self.logika.ustaw_tryb_biezacego_wpisu('A')
             self.assertEqual(self.logika.biezacy_wpis.tryb,'A')
+            self.assertEqual(self.logika.biezacy_wpis.ile_razy_wylos,0)
+
+        nowa=self.logika.lista_slowek
+        self.assertNotEqual(stara,nowa)
+
 
 
     def test_ustaw_tryb_biezacego_wpisu_ulica(self):
         '''
         zwraca True jak sie udalo
         False jak nie
+        na koniec aktualizuje lista_slowek/ulic
         '''
         #zły typ powinien dać wyjątek
         with self.assertRaises(ValueError):
@@ -479,18 +488,24 @@ class TestKlasaLogika(UT.TestCase):
         #inicjalizacja biezacego wpisu
         self.logika.biezacy_wpis=RA.choice(self.logika.lista_ulic)
         #print('1biezacy',self.logika.biezacy_wpis)
+        stara=CO.deepcopy(self.logika.lista_ulic)
 
         #teraz zmieniam tryb dla biezacego: daje na nastepny(A->B,B->C,C->A)
         if self.logika.biezacy_wpis.tryb=='A':
             self.logika.ustaw_tryb_biezacego_wpisu('B')
             self.assertEqual(self.logika.biezacy_wpis.tryb,'B')
+            self.assertEqual(self.logika.biezacy_wpis.ile_razy_wylos,0)
         elif self.logika.biezacy_wpis.tryb=='B':
             self.logika.ustaw_tryb_biezacego_wpisu('C')
             self.assertEqual(self.logika.biezacy_wpis.tryb,'C')
+            self.assertEqual(self.logika.biezacy_wpis.ile_razy_wylos,0)
         else:
             self.logika.ustaw_tryb_biezacego_wpisu('A')
             self.assertEqual(self.logika.biezacy_wpis.tryb,'A')
+            self.assertEqual(self.logika.biezacy_wpis.ile_razy_wylos,0)
 
+        nowa=self.logika.lista_ulic
+        self.assertNotEqual(stara,nowa)
 
     def test_cofnij_ilosc_wylos_biez_wpisu_slowko(self):
         "w tej wersji biezacy A"
