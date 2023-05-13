@@ -5,8 +5,27 @@ import random as RA
 from klasa_wpis_ulica_wpis_slowko import WpisSlowko as KWS
 from klasa_wpis_ulica_wpis_slowko import WpisUlica as KWU
 
+def sprawdzanie_param_inita(func):
+    def wewn(*arg):
+        #print('arg[1]',arg[1])
+        if not len(arg[1])==4:
+            raise ValueError('zły zestaw arg wejsciowych klasy Logika.jest',arg)
+
+        if arg[1][0]=='':
+            raise ValueError('plik slowka powinien byc niepusty')
+        if arg[1][1]=='':
+            raise ValueError('plik ulice powinien byc niepusty')
+        if not arg[1][2] in ['A','B','C']:
+            raise ValueError('tryb powinien byc A/B/C. jest',arg[1][2])
+        if int(arg[1][3])<0 or int(arg[1][3])>100:
+            raise ValueError('procent powinien byc 0-100',int(arg[1][3]))
+
+        func(*arg)
+    return wewn
+
 class Logika:
     "..."
+    @sprawdzanie_param_inita
     def __init__(self,ust_log):
         "potrzebuje argumentów początkowych"
         #print('ustL=',ust_log)
@@ -49,6 +68,8 @@ class Logika:
             self.lista_slowek.append(tmp)
 
         plik.close()
+        if len(self.lista_slowek)==0:
+            raise ValueError('brak słówek w pliku wejściowym')
 
     def wczytaj_ulice(self):
         "wypełnia self.lista_ulic listą type WpisUlica"
@@ -67,6 +88,8 @@ class Logika:
             self.lista_ulic.append(tmp)
 
         plik.close()
+        if len(self.lista_ulic)==0:
+            raise ValueError('brak ulic w pliku wejściowym')
 
     def zapisz_slowka(self):
         "self.lista_slowek do pliku okreslonego w self.plik_slowka"
@@ -90,15 +113,50 @@ class Logika:
             plik.write(str(wpis)+'\n')
         plik.close()
 
+    def czy_sa_slowka_w_trybie(self):
+        '''
+        potrzebne przy zmianie trybu
+        '''
+        for slowko in self.lista_slowek:
+            if slowko.tryb==self.biezacy_tryb:
+                return True
+
+        return False
+
+    def czy_sa_ulice_w_trybie(self):
+        '''
+        potrzebne przy zmianie trybu
+        jawnie określony tryb dla czytelności
+        '''
+        for ulica in self.lista_ulic:
+            if ulica.tryb==self.biezacy_tryb:
+                return True
+
+        return False
+
     def zrob_liste_zadan(self):
         '''
         lista_zadan żeby były albo 'u' albo 's1' wg procent_slowek_reszta_ulic
+        ale lista skorygowana o obecność/brak słówek/ulic w danym trybie
+            (wtedy tylko istniejące na liście zadan)
         '''
         self.lista_zadan=list()
-        ile_zrobic=30
+        #print('czy_sa_slowka_w_trybie',self.biezacy_tryb,self.czy_sa_slowka_w_trybie())
+        #print('czy_sa_ulice_w_trybie',self.biezacy_tryb,self.czy_sa_ulice_w_trybie())
 
-        ile_ulic=int(ile_zrobic*self.procent_slowek_reszta_ulic/100)
-        ile_slowek=ile_zrobic-ile_ulic
+        #jeżeli ile_slowek/ile_ulic w danym trybie SĄ to proporcje zachowuje
+        #jeśli brak to 100% danego
+        ile_zrobic=8
+        ile_ulic=0
+        ile_slowek=0
+
+        if self.czy_sa_slowka_w_trybie() and not self.czy_sa_ulice_w_trybie():
+            ile_slowek=ile_zrobic
+        if not self.czy_sa_slowka_w_trybie() and self.czy_sa_ulice_w_trybie():
+            ile_ulic=ile_zrobic
+        if self.czy_sa_slowka_w_trybie() and self.czy_sa_ulice_w_trybie():
+            ile_ulic=int(ile_zrobic*self.procent_slowek_reszta_ulic/100)
+            ile_slowek=ile_zrobic-ile_ulic
 
         for _ in range(ile_slowek):
             self.lista_zadan.append('s1')
@@ -110,7 +168,7 @@ class Logika:
         #print('lista_zadan',self.lista_zadan)
 
     def wez_z_listy_zadan(self):
-        "daje kolejne z listy zadan i w razie potrzeby uzupełnia ją"
+        "daje kolejne z listy zadan i w razie potrzeby uzupełnia ją(od końca)"
         if len(self.lista_zadan)==0:
             self.zrob_liste_zadan()
 
@@ -232,17 +290,21 @@ class Logika:
     def ustaw_biezacy_tryb(self,na_jaki):
         '''
         jednak druga f.zmiany trybu może się przydać
+        aktualizuje liste_zadan
         zwraca nowy tryb
         '''
         if not na_jaki in ['A','B','C']:
             raise ValueError('tryb musi być:A/B/C.jest',na_jaki)
 
         self.biezacy_tryb=na_jaki
+        self.zrob_liste_zadan()
+
         return self.biezacy_tryb
 
     def zmien_biezacy_tryb(self):
         '''
         konwencja trybu z dużej czyli A lub B lub C
+        aktualizuje liste_zadan
         zwraca nowy biezacy tryb
         '''
 
@@ -252,6 +314,8 @@ class Logika:
             self.biezacy_tryb='C'
         else:
             self.biezacy_tryb='A'
+
+        self.zrob_liste_zadan()
         #print('nowy biezacy_tryb',self.biezacy_tryb)
         return self.biezacy_tryb
 
@@ -260,7 +324,7 @@ class Logika:
         konwencja trybu z dużej czyli A lub B lub C
         zwraca True jak sie udało.
         False jak nie
-        po wykonaniu zmiany trybu aktualizaje list_slowek/ulic
+        po wykonaniu zmiany trybu aktualizaje lista_slowek/ulic
         '''
         if not na_jaki in ['A','B','C']:
             raise ValueError('nowy tryb musi być A/B/C')
@@ -277,7 +341,7 @@ class Logika:
         #print('poprawiony',poprawiony)
 
         #aktualizuje w lista_*
-        print(self.zmien_wpis(dotychczasowy,poprawiony))
+        #print(self.zmien_wpis(dotychczasowy,poprawiony))
 
     def cofnij_ilosc_wylos_biez_wpisu_lo(self):
         "dla bieżącego wpisu dekrementuj ile_razy_wylos w self.lista_slowek/ulic"
