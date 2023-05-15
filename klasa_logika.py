@@ -155,8 +155,9 @@ class Logika:
         if not self.czy_sa_slowka_w_trybie() and self.czy_sa_ulice_w_trybie():
             ile_ulic=ile_zrobic
         if self.czy_sa_slowka_w_trybie() and self.czy_sa_ulice_w_trybie():
-            ile_ulic=int(ile_zrobic*self.procent_slowek_reszta_ulic/100)
-            ile_slowek=ile_zrobic-ile_ulic
+            ile_slowek=int(ile_zrobic*self.procent_slowek_reszta_ulic/100)
+            ile_ulic=ile_zrobic-ile_slowek
+            #print('ile_slowek',ile_slowek,'ile_ulic',ile_ulic)
 
         for _ in range(ile_slowek):
             self.lista_zadan.append('s1')
@@ -286,6 +287,15 @@ class Logika:
         #print('po',self.lista_ulic)
         return wylosowane
 
+    def zeruj_slowka(self):
+        "slowka z lista_slowek ile_razy_wylos=0"
+        for wpis in self.lista_slowek:
+            wpis.ile_razy_wylos=0
+
+    def zeruj_ulice(self):
+        "ulice z lista_ulic ile_razy_wylos=0"
+        for wpis in self.lista_ulic:
+            wpis.ile_razy_wylos=0
 
     def ustaw_biezacy_tryb(self,na_jaki):
         '''
