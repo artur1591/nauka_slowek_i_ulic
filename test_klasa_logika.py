@@ -115,6 +115,41 @@ class TestKlasaLogika(UT.TestCase):
 
         self.assertNotEqual(rozmiar_pliku,0)
 
+    def test_zeruj_slowka(self):
+        "test zeruj_slowka"
+
+        #zabezpiecz liste_slowek
+        zapasowa=CO.deepcopy(self.logika.lista_slowek)
+
+        #wykonaj funkcje
+        self.logika.zeruj_slowka()
+        #sprawdz czy wyzerowała
+        for slowko in self.logika.lista_slowek:
+            self.assertTrue(slowko.ile_razy_wylos==0)
+        #sprawdz czy zapasowa rozni się od biezacej
+        self.assertNotEqual(self.logika.lista_slowek,zapasowa)
+
+        #przywroc liste slowek po zerowaniu
+        self.logika.liste_slowek=zapasowa
+
+    def test_zeruj_ulice(self):
+        "test zeruj_ulice"
+
+        #zabezpiecz liste_ulic
+        zapasowa=CO.deepcopy(self.logika.lista_ulic)
+
+        #wykonaj funkcje
+        self.logika.zeruj_ulice()
+        #sprawdz czy wyzerowała
+        for ulica in self.logika.lista_ulic:
+            self.assertTrue(ulica.ile_razy_wylos==0)
+        #sprawdz czy zapasowa rozni się od biezacej
+        self.assertNotEqual(self.logika.lista_ulic,zapasowa)
+
+        #przywroc liste ulic po zerowaniu
+        self.logika.liste_ulic=zapasowa
+
+
     def test_czy_sa_slowka_w_trybie(self):
         '''
         ponieważ tryb się zmienia w trakcie programu
@@ -191,10 +226,11 @@ class TestKlasaLogika(UT.TestCase):
 
                 ile_slowek_znalazl=self.logika.lista_zadan.count('s1')
                 ile_slowek_powinno_byc=int(rozm_listy_zadan*procent_slowek/100)
+                #print('ile_slowek_znalazl',ile_slowek_znalazl,'ile_slowek_powinno_byc',ile_slowek_powinno_byc)
                 self.assertEqual(ile_slowek_znalazl,ile_slowek_powinno_byc)
 
                 ile_ulic_znalazl=self.logika.lista_zadan.count('u')
-                ile_ulic_powinno_byc=rozm_listy_zadan-int(rozm_listy_zadan*procent_slowek/100)
+                ile_ulic_powinno_byc=rozm_listy_zadan-ile_slowek_powinno_byc
                 self.assertEqual(ile_ulic_znalazl,ile_ulic_powinno_byc)
 
 
@@ -215,6 +251,29 @@ class TestKlasaLogika(UT.TestCase):
         for _ in range(100):
             wynik=self.logika.wez_z_listy_zadan()
             self.assertTrue(wynik in ['u','s1'])
+
+
+        #teraz 100% słówek
+        self.logika.procent_slowek_reszta_ulic=100
+        self.logika.zrob_liste_zadan()
+
+        for _ in range(100):
+            wynik=self.logika.wez_z_listy_zadan()
+            self.assertEqual(wynik,'s1')
+
+
+        #teraz 0% słówek czyli tylko ulice
+        self.logika.procent_slowek_reszta_ulic=0
+        self.logika.zrob_liste_zadan()
+
+        for _ in range(100):
+            wynik=self.logika.wez_z_listy_zadan()
+            self.assertEqual(wynik,'u')
+
+        #powrót do wartości początkowych
+        self.logika.procent_slowek_reszta_ulic=50
+        self.logika.zrob_liste_zadan()
+
 
     def test_jaki_najrzadziej_slowko(self):
         "bierze pod uwagę biezacy_tryb"
