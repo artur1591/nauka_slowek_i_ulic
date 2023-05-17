@@ -120,6 +120,22 @@ class TestKlasWpisObu(UT.TestCase):
         wynik3=KW.WpisUlica.czy_str_jest_klasy_WpisUlica(slowko_na_str)
         self.assertFalse(wynik3)
 
+    def test_str_do_WpisUlica(self):
+        "zamienia str-a na obiekt klasy WpisUlica"
+
+        one=KW.WpisUlica("Zielona")
+        jako_str=str(one)
+        wynik1=KW.WpisUlica.str_do_WpisUlica(jako_str)
+        self.assertIsInstance(wynik1,KW.WpisUlica)
+
+        two=KW.WpisSlowko("grey","szary")
+        jako_str=str(two)
+        wynik2=KW.WpisUlica.str_do_WpisUlica(jako_str)
+        self.assertFalse(wynik2)
+
+        wynik3=KW.WpisUlica.str_do_WpisUlica("ty to filozof jesteś")
+        self.assertFalse(wynik3)
+
     def test_czy_str_jest_klasy_WpisSlowko(self):
         "rozpoznawanie typu z str(WpisSlowko)"
 
@@ -140,6 +156,22 @@ class TestKlasWpisObu(UT.TestCase):
 
         wynik4=KW.WpisSlowko.czy_str_jest_klasy_WpisSlowko("zmyslam123 C")
         self.assertFalse(wynik4)
+
+    def test_str_do_WpisSlowko(self):
+        "zamienia str-a na obiekt klasy WpisSlowko"
+
+        one=KW.WpisSlowko("zielony","green")
+        jako_str=str(one)
+        wynik1=KW.WpisSlowko.str_do_WpisSlowko(jako_str)
+        self.assertIsInstance(wynik1,KW.WpisSlowko)
+
+        two=KW.WpisUlica("Szara")
+        jako_str=str(two)
+        wynik2=KW.WpisSlowko.str_do_WpisSlowko(jako_str)
+        self.assertFalse(wynik2)
+
+        wynik3=KW.WpisSlowko.str_do_WpisSlowko("ty to filozof jesteś")
+        self.assertFalse(wynik3)
 
 
 if __name__=='__main__':
