@@ -23,7 +23,8 @@ class TestKlasaLogika(UT.TestCase):
 
         self.wpis_zmyslonyU=KW.WpisUlica("różowa")
         self.wpis_dokladnyU=KW.WpisUlica("Krakowska")
-        self.wpis_czesciowyU=KW.WpisUlica("górska")
+        self.wpis_czesciowyU_wiele_wyn=KW.WpisUlica("ska")
+        self.wpis_czesciowyU_1_wyn=KW.WpisUlica("dzka")
 
     def tearDown(self):
         pass
@@ -618,53 +619,86 @@ class TestKlasaLogika(UT.TestCase):
         self.assertTrue(wynik2)
 
         #częsciowy wpis
-        wynik3=self.logika.czy_wpis_istnieje(self.wpis_czesciowyU)
+        wynik3=self.logika.czy_wpis_istnieje(self.wpis_czesciowyU_1_wyn)
         self.assertFalse(wynik3)
 
 
     def test_szukaj_wpis_slowko(self):
-        ""
+        '''
+        przypadki:
+            brak znalezionych:False
+            1 znaleziony: typ Wpis
+            więcej niż 1 znaleziony [Wpis,Wpis,...]
+        '''
         #zmyślone
         wynik1=self.logika.szukaj_wpis("zmyślony",typ='s')
         #print('wynik1',wynik1)
         self.assertFalse(wynik1)
 
-        #istniejacy
+        #jedeny taki istniejacy
         wynik2=self.logika.szukaj_wpis(self.wpis_dokladnyS.drugi,typ='s')
         #print('wynik2',wynik2)
         self.assertIsInstance(wynik2,KW.WpisSlowko)
 
+        #szukanie puste wpisu
+        with self.assertRaises(ValueError):
+            self.logika.szukaj_wpis('',typ='s')
+
+        #wiele wyników powinno być
+        wynik4=self.logika.szukaj_wpis('zawsze',typ='s')
+        #print('wynik4',wynik4)
+        self.assertIsInstance(wynik4,list)
+
         #częściowy powinien się udać(dać klase Wpis)
-        wynik3=self.logika.szukaj_wpis(self.wpis_czesciowyS.drugi,typ='s')
-        #print('wynik3',wynik3)
-        self.assertIsInstance(wynik3,KW.WpisSlowko)
+        wynik5=self.logika.szukaj_wpis(self.wpis_czesciowyS.drugi,typ='s')
+        #print('wynik5',wynik5)
+        self.assertIsInstance(wynik5,KW.WpisSlowko)
 
         #za krótki
-        wynik4=self.logika.szukaj_wpis("dw",typ='s')
-        #print('wynik4',wynik4)
-        self.assertFalse(wynik4)
+        wynik6=self.logika.szukaj_wpis("dw",typ='s')
+        #print('wynik6',wynik6)
+        self.assertFalse(wynik6)
+
+        #zly typ
+        with self.assertRaises(ValueError):
+            self.logika.szukaj_wpis("fkdsofkd",typ='d')
 
     def test_szukaj_wpis_ulica(self):
-        ""
+        '''
+        przypadki:
+            brak znalezionych:False
+            1 znaleziony: typ Wpis
+            więcej niż 1 znaleziony [Wpis,Wpis,...]
+        '''
         #zmyślone
         wynik1=self.logika.szukaj_wpis("zmyślony",typ='u')
         #print('wynik1',wynik1)
         self.assertFalse(wynik1)
 
-        #istniejacy
-        #wynik2=self.logika.szukaj_wpis(self.wpis_dokladnyU.pierwszy,typ='u')
+        #jedeny taki istniejacy
+        wynik2=self.logika.szukaj_wpis(self.wpis_dokladnyU.pierwszy,typ='u')
         #print('wynik2',wynik2)
-        #self.assertIsInstance(wynik2,KW.WpisUlica)
+        self.assertIsInstance(wynik2,KW.WpisUlica)
+
+        #szukanie puste wpisu
+        with self.assertRaises(ValueError):
+            self.logika.szukaj_wpis('',typ='u')
+
+        #wiele wyników powinno być
+        wynik4=self.logika.szukaj_wpis(self.wpis_czesciowyU_wiele_wyn.pierwszy,typ='u')
+        #print('wynik4',wynik4)
+        self.assertIsInstance(wynik4,list)
 
         #częściowy powinien się udać(dać klase Wpis)
-        '''wynik3=self.logika.szukaj_wpis(self.wpis_czesciowyU.drugi,typ='u')
-        #print('wynik3',wynik3)
-        self.assertIsInstance(wynik3,KW.WpisUlica)
+        wynik5=self.logika.szukaj_wpis(self.wpis_czesciowyU_1_wyn.pierwszy,typ='u')
+        #print('wynik5',wynik5)
+        self.assertIsInstance(wynik5,KW.WpisUlica)
 
         #za krótki
-        wynik4=self.logika.szukaj_wpis("dw",typ='u')
-        #print('wynik4',wynik4)
-        self.assertEqual(wynik4,False)'''
+        wynik6=self.logika.szukaj_wpis("dw",typ='u')
+        #print('wynik6',wynik6)
+        self.assertFalse(wynik6)
+
 
     def test_dodaj_wpis_slowko(self):
         ""
