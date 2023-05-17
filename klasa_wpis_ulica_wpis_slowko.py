@@ -41,12 +41,47 @@ class WpisUlica:
         '''
         return self.pierwszy<inny.pierwszy
 
+    def czy_str_jest_klasy_WpisUlica(napis):
+        '''
+        warunki wstępne:
+            musi mieć 1 spacje
+            zawierać jeden z '|A', '|B', '|C'
+        '''
+        #print('Unapis',napis)
+        if napis.count(' ')!=1:
+            return False
+        if not any([napis.__contains__(wl) for wl in ['|A','|B','|C']]):
+            return False
+
+        przerwa_po_pierwszy=napis.rindex('|')
+
+        #print('przerwa_po_pierwszy',przerwa_po_pierwszy)
+        pierwszy=napis[0:przerwa_po_pierwszy]
+        przerwa_po_trybie=napis.rindex(' ')
+        #print('przerwa_po_trybie',przerwa_po_trybie)
+        tryb=napis[przerwa_po_pierwszy+1]
+        ile_x=napis[przerwa_po_pierwszy+3:]
+        #print('\nTUpierwszy',pierwszy,'tryb',tryb,'ile_x',ile_x)
+
+        if tryb not in ['A','B','C']:
+            return False
+        if int(ile_x)<0:
+            return False
+        if not isinstance(pierwszy,str):
+            return False
+
+        return True
+
     def __str__(self):
         '''
         wykorzystywane do zapisywania ulic(taki operator wypisywania)
         po pierwszy jest znak |
         '''
         return self.pierwszy+'|'+self.tryb+' '+str(self.ile_razy_wylos)
+
+    #wyciąga składowe WpisUlica z str(WpisUlica)
+    def str_do_pierwszy(jako_str):
+        "odwrotność __str__"
 
     def __repr__(self):
         return self.pierwszy+'|'+self.tryb+' '+str(self.ile_razy_wylos)
@@ -91,6 +126,42 @@ class WpisSlowko(WpisUlica):
         po pierwszy jest znak |
         '''
         return self.pierwszy+'|'+self.drugi+' '+self.tryb+' '+str(self.ile_razy_wylos)
+
+    def czy_str_jest_klasy_WpisSlowko(napis):
+        '''
+        warunki wstępne:
+            musi mieć 2 spacje
+            zawierać jeden z ' A ', ' B ', ' C '
+            musi mieć 1 '|'
+        '''
+        #print('Snapis',napis)
+        if napis.count(' ')!=2:
+            return False
+        if not any([napis.__contains__(wl) for wl in [' A ',' B ',' C ']]):
+            return False
+        if napis.count('|')!=1:
+            return False
+
+        przerwa_po_pierwszy=napis.index('|')
+        #print('Sprzerwa_po_pierwszy',przerwa_po_pierwszy)
+
+        pierwszy=napis[0:przerwa_po_pierwszy]
+        przerwa_po_trybie=napis.rindex(' ')
+        tryb=napis[przerwa_po_trybie-1]
+        #print('Stryb',tryb)
+        ile_x=napis[przerwa_po_trybie+1:]
+        drugi=napis[przerwa_po_pierwszy+1:przerwa_po_trybie-2]
+
+        #print('\nTSpierwszy',pierwszy,'drugi',drugi,'tryb',tryb,'ile_x',ile_x)
+
+        if not tryb in ['A','B','C']:
+            return False
+        if int(ile_x)<0:
+            return False
+        if not isinstance(pierwszy,str) or not isinstance(drugi,str):
+            return False
+
+        return True
 
     def __repr__(self):
         return self.pierwszy+'|'+self.drugi+' '+self.tryb+' '+str(self.ile_razy_wylos)
