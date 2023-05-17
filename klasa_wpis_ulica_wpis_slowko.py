@@ -48,6 +48,49 @@ class WpisUlica:
         '''
         return self.pierwszy+'|'+self.tryb+' '+str(self.ile_razy_wylos)
 
+    def czy_str_jest_klasy_WpisUlica(napis):
+        '''
+        sprawdza tylko typ żeby DRY
+        '''
+        if isinstance(WpisUlica.str_do_WpisUlica(napis),WpisUlica):
+            return True
+        return False
+
+    def str_do_WpisUlica(napis):
+        '''
+        odwrotność __str__
+        w razie niepowodzenia False
+
+        warunki wstępne:
+            musi mieć 1 spacje
+            zawierać jeden z '|A', '|B', '|C'
+        '''
+        #print('Unapis',napis)
+        if not isinstance(napis,str):
+            return False
+        if napis.count(' ')!=1:
+            return False
+        if not any([napis.__contains__(wl) for wl in ['|A','|B','|C']]):
+            return False
+
+        przerwa_po_pierwszy=napis.rindex('|')
+        #print('przerwa_po_pierwszy',przerwa_po_pierwszy)
+        pierwszy=napis[0:przerwa_po_pierwszy]
+        przerwa_po_trybie=napis.rindex(' ')
+        #print('przerwa_po_trybie',przerwa_po_trybie)
+        tryb=napis[przerwa_po_pierwszy+1]
+        ile_x=napis[przerwa_po_pierwszy+3:]
+        #print('\nTUpierwszy',pierwszy,'tryb',tryb,'ile_x',ile_x)
+
+        if tryb not in ['A','B','C']:
+            return False
+        if int(ile_x)<0:
+            return False
+        if not isinstance(pierwszy,str):
+            return False
+
+        return WpisUlica(pierwszy,tryb,int(ile_x))
+
     def __repr__(self):
         return self.pierwszy+'|'+self.tryb+' '+str(self.ile_razy_wylos)
 
@@ -91,6 +134,50 @@ class WpisSlowko(WpisUlica):
         po pierwszy jest znak |
         '''
         return self.pierwszy+'|'+self.drugi+' '+self.tryb+' '+str(self.ile_razy_wylos)
+
+    def czy_str_jest_klasy_WpisSlowko(napis):
+        '''
+        sprawdza tylko typ żeby DRY
+        '''
+        if isinstance(WpisSlowko.str_do_WpisSlowko(napis),WpisSlowko):
+            return True
+        return False
+
+    def str_do_WpisSlowko(napis):
+        '''
+        odwrotność __str__
+        w razie niepowodzenia False
+
+        warunki wstępne:
+            musi mieć 2 spacje
+            zawierać jeden z ' A ', ' B ', ' C '
+        '''
+        #print('Snapis',napis)
+        if not isinstance(napis,str):
+            return False
+        if napis.count(' ')!=2:
+            return False
+        if not any([napis.__contains__(wl) for wl in [' A ',' B ',' C ']]):
+            return False
+
+        przerwa_po_pierwszy=napis.rindex('|')
+        #print('przerwa_po_pierwszy',przerwa_po_pierwszy)
+        pierwszy=napis[0:przerwa_po_pierwszy]
+        przerwa_po_trybie=napis.rindex(' ')
+        #print('przerwa_po_trybie',przerwa_po_trybie)
+        tryb=napis[przerwa_po_trybie-1:przerwa_po_trybie]
+        ile_x=napis[przerwa_po_trybie+1:]
+        drugi=napis[przerwa_po_pierwszy+1:przerwa_po_trybie-2]
+        #print('\nSpierwszy',pierwszy,'drugi',drugi,'tryb',tryb,'ile_x',ile_x)
+
+        if tryb not in ['A','B','C']:
+            return False
+        if int(ile_x)<0:
+            return False
+        if not isinstance(pierwszy,str) or not isinstance(drugi,str):
+            return False
+
+        return WpisSlowko(pierwszy,drugi,tryb,int(ile_x))
 
     def __repr__(self):
         return self.pierwszy+'|'+self.drugi+' '+self.tryb+' '+str(self.ile_razy_wylos)

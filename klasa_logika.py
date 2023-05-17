@@ -342,14 +342,14 @@ class Logika:
         #print('na_jaki',na_jaki)
 
         #zapamietuje biezacy(zeby podmienic)
-        dotychczasowy=self.biezacy_wpis
+        #dotychczasowy=self.biezacy_wpis
         #print('dotychczasowy',dotychczasowy)
 
         #aktualizacja trybu + ile_razy_wylos zeruj
         self.biezacy_wpis.tryb=na_jaki
         self.biezacy_wpis.ile_razy_wylos=0
 
-        poprawiony=self.biezacy_wpis
+        #poprawiony=self.biezacy_wpis
         #print('poprawiony',poprawiony)
 
         #aktualizuje w lista_*
@@ -389,41 +389,49 @@ class Logika:
 
         if isinstance(jaki_wpis,KWS):
             return jaki_wpis in self.lista_slowek
-        else:
-            return jaki_wpis in self.lista_ulic
+        return jaki_wpis in self.lista_ulic
 
     def szukaj_wpis(self,szukany_str,*,typ):
         '''
         pobiera str  wymaga typu 's' lub 'u'
         szukanie metodą str.find ale wymaga co najmniej 3znaków
-        zwraca znaleziony Wpis jeśli dopasował pierwszy/drugi
+        zwraca znaleziony Wpis (lub listę Wpisów) jeśli dopasował pierwszy/drugi
         zwraca False jeśli:
             mniej niż 3 znaki zapytania
             dopasowanie pierwszy/drugi nieudało się
         '''
         #print('szukany_str',szukany_str,len(szukany_str),typ)
+        if szukany_str=='':
+            raise ValueError('szukany_str powinien być niepusty')
         if not isinstance(szukany_str,str):
             raise TypeError('szukany powinien być str-em.jest',type(szukany_str))
         if len(szukany_str)<3:
             #print('wpisz więcej niż 2 znaki szukanego')
             return False
         if not typ in ['s','u']:
-            raise Exception('typ powinien być s/u. jest',typ)
+            raise ValueError('typ powinien być s/u. jest',typ)
 
         #print('szukaj_wpis',szukany_str,len(szukany_str),typ)
+
+        znalezione_wpisy=[]
 
         if typ=='s':
             #jak WpisSlowko
             for slowko in self.lista_slowek:
                 if slowko.pierwszy.find(szukany_str)!=-1 or slowko.drugi.find(szukany_str)!=-1:
-                    return slowko
-            return False
+                    znalezione_wpisy.append(slowko)
         else:
             #jak WpisUlica
             for ulica in self.lista_ulic:
                 if ulica.pierwszy.find(szukany_str)!=-1:
-                    return ulica
+                    znalezione_wpisy.append(ulica)
+
+        if len(znalezione_wpisy)==0:
             return False
+        if len(znalezione_wpisy)==1:
+            return znalezione_wpisy[0]
+        return znalezione_wpisy
+
 
     def dodaj_wpis(self,nowy_wpis):
         '''
@@ -469,9 +477,9 @@ class Logika:
                 indeks_starego=self.lista_ulic.index(stary_wpis)
                 self.lista_ulic[indeks_starego]=nowy_wpis
             return True
-        else:
-            #print('brakuje starego wpisu i/lub nowy już istnieje')
-            return False
+        #else:
+        #print('brakuje starego wpisu i/lub nowy już istnieje')
+        return False
 
     def kasuj_wpis(self,do_kasow_wpis):
         '''
