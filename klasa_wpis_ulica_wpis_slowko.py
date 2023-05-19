@@ -62,13 +62,13 @@ class WpisUlica:
         w razie niepowodzenia False
 
         warunki wstępne:
-            musi mieć 1 spacje
+            musi mieć przynajmniej 1 spacje
             zawierać jeden z '|A', '|B', '|C'
         '''
         #print('Unapis',napis)
         if not isinstance(napis,str):
             return False
-        if napis.count(' ')!=1:
+        if napis.count(' ')==0:
             return False
         if not any([napis.__contains__(wl) for wl in ['|A','|B','|C']]):
             return False
@@ -149,13 +149,13 @@ class WpisSlowko(WpisUlica):
         w razie niepowodzenia False
 
         warunki wstępne:
-            musi mieć 2 spacje
+            musi mieć przynajmniej 2 spacje
             zawierać jeden z ' A ', ' B ', ' C '
         '''
         #print('Snapis',napis)
         if not isinstance(napis,str):
             return False
-        if napis.count(' ')!=2:
+        if napis.count(' ')<2:
             return False
         if not any([napis.__contains__(wl) for wl in [' A ',' B ',' C ']]):
             return False
@@ -177,6 +177,7 @@ class WpisSlowko(WpisUlica):
         if not isinstance(pierwszy,str) or not isinstance(drugi,str):
             return False
 
+        #print('przed return')
         return WpisSlowko(pierwszy,drugi,tryb,int(ile_x))
 
     def __repr__(self):

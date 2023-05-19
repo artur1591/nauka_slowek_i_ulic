@@ -157,6 +157,9 @@ class TestKlasWpisObu(UT.TestCase):
         wynik4=KW.WpisSlowko.czy_str_jest_klasy_WpisSlowko("zmyslam123 C")
         self.assertFalse(wynik4)
 
+        wynik5=KW.WpisSlowko.czy_str_jest_klasy_WpisSlowko("past simple (zdanie)|podmiot 2f A 2")
+        self.assertTrue(wynik5)
+
     def test_str_do_WpisSlowko(self):
         "zamienia str-a na obiekt klasy WpisSlowko"
 
