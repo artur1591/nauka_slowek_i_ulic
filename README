@@ -1,0 +1,27 @@
+Co robi program?
+	Program losuje słówka i/lub ulice w celu treningu 
+
+Obsługa:
+	Klawisze:
+		spacja
+		ctrl+q / Escape - zamyka program
+		ctrl+ */+/- reset/zwiększa/zmniejsza czcionkę
+		ctrl+0
+		ctrl+z
+		ctrl+e
+		ctrl+a/b/c - zmiana trybu bierzącego słówka
+		ctrl+t - zmiana trybu 
+	Po uruchomieniu 
+	Spacja- kolejne 
+	Część słówek 
+	Część ulic
+
+Dlaczego został napisany:
+	Są powody sądzić że powinna być równowaga między przyjmowaniem informacji 
+	(np.poprzed czytanie) i wyciąganiem informacji z głowy (przepominanie sobie). 
+	Program realizuje część wyciągania/przypominania sobie informacji.
+	Technika nazywana "testem zderzeniowym" przez R.Kotarskiego w jego książce "Włam się do mózgu".
+	Autor doświadczył spadku zdolności intelektualnych w wyniki zaburzenia tej równowagi
+	(taka teza jest w trakcie badania).
+
+O tym jak został napisany:
