@@ -1,5 +1,11 @@
 Co robi program?
-	Program losuje słówka i/lub ulice w celu treningu 
+	Program losuje słówka i/lub ulice w celu treningu.
+	Spośród najrzadziej wylosowanych losowane są kolejne.
+
+Uruchomienie programu:
+	main.py
+	opcjonalny argument: liczba od 0 do 100 oznacza procent_slowek_reszta_ulic
+		czyli 100 tylko slowka a 0 tylko ulice
 
 Obsługa:
 	Klawisze:
@@ -12,13 +18,13 @@ Obsługa:
 			ctrl+e edycja bieżącego wpisu
 			ctrl+d dodaj wpis
 			ctrl+s szukaj wpisów(też kasowanie)
-			ctrl+k kasuj wpis
 		ctrl+a/b/c - zmiana trybu bieżącego słówka
 		ctrl+t - zmiana trybu 
-	Po uruchomieniu 
-	Spacja- kolejne 
-	Część słówek 
-	Część ulic
+	Po uruchomieniu:
+		Spacja- kolejne 
+
+Zastosowane technologie:
+	python/tkinter, git, vim, linux(debian).
 
 Dlaczego został napisany:
 	Są powody sądzić że powinna być równowaga między przyjmowaniem informacji 
@@ -27,5 +33,3 @@ Dlaczego został napisany:
 	Technika nazywana "testem zderzeniowym" przez R.Kotarskiego w jego książce "Włam się do mózgu".
 	Autor doświadczył spadku zdolności intelektualnych w wyniki zaburzenia tej równowagi.
 	(Taka teza jest w trakcie badania. Druga teza: Spadek wynika to z cech autora)
-
-O tym jak został napisany:
