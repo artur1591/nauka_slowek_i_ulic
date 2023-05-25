@@ -22,12 +22,13 @@ class Okno:
         self.czcionka_small=None
         self.czcionka_family=None
         self.alarm_po_ilu_sek=None
+        self.plik_minutnika=''
         self.watek_zakoncz_minutnika=False
         self.pasekstanu=None
 
         #main
-        print('okna readonly')
         print('sprawdzić czy pokazuje tylko najrzadziej losowane')
+        print('import Pmw sprawdzić widżety')
         ust_okn,ust_log=self.wczytaj_ustawienia_programu()
         self.okno=TK.Tk()
         self.wpisz_ustawienia_w_klase_okno(ust_okn)
@@ -55,7 +56,7 @@ class Okno:
         #ust.wczytaj_z_pliku()
 
         #return ust.zwroc_ustawienia_programu()
-        return [[1920,600,70,23,16,'Arial',120],['slowka.nauka','ulice.nauka','A',100]]
+        return [[1920,600,70,23,16,'Arial',120,'clock-strike.wav'],['slowka.nauka','ulice.nauka','A',100]]
 
     def zapisz_ustawienia_programu(self):
         "do pliku ustawienia.xml"
@@ -65,8 +66,10 @@ class Okno:
         czc_roz_b=self.czcionka_big['size']
         czc_roz_m=self.czcionka_middle['size']
         czc_roz_s=self.czcionka_small['size']
+        ala_ile=self.alarm_po_ilu_sek
+        ala_pli=self.plik_minutnika
 
-        ust_okn_lista=[roz_x,roz_y,czc_roz_b,czc_roz_m,czc_roz_s,czc_fam,self.alarm_po_ilu_sek]
+        ust_okn_lista=[roz_x,roz_y,czc_roz_b,czc_roz_m,czc_roz_s,czc_fam,ala_ile,ala_pli]
 
         plik_slo=self.logika.plik_slowka
         plik_uli=self.logika.plik_ulice
@@ -88,6 +91,7 @@ class Okno:
         self.czcionka_middle=FO.Font(family=self.czcionka_family,size=ust_okn[3])
         self.czcionka_small=FO.Font(family=self.czcionka_family,size=ust_okn[4])
         self.alarm_po_ilu_sek=ust_okn[6]
+        self.plik_minutnika=ust_okn[7]
 
     def zbuduj_okno(self):
         ""
@@ -208,7 +212,8 @@ class Okno:
                 self.pasekstanu.ustaw(ktory=2,tresc='Zacząłem '+konwertuj(odliczone))
                 if self.alarm_po_ilu_sek==odliczone:
                     self.pasekstanu.ustaw(ktory=1,tresc='--KONIEC JUŻ--',na_ile_sek=5)
-                    self.alarmuj_dzwiekiem("clock-strike.wav")
+                    #self.alarmuj_dzwiekiem("clock-strike.wav")
+                    self.alarmuj_dzwiekiem(self.plik_minutnika)
                 TI.sleep(0.25)
                 if self.watek_zakoncz_minutnika:
                     return

@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<nauka_slowek>
+
+	<ustawienia_okna>
+		<rozm_x>1920</rozm_x>
+		<rozm_y>600</rozm_y>
+		<czcionka_duza_size>70</czcionka_duza_size>
+		<czcionka_mala_size>16</czcionka_mala_size>
+		<czcionka_rodzina>Arial</czcionka_rodzina>
+		<alarm_po_ilu_sek>120</alarm_po_ilu_sek>
+		<plik_minutnika>clock-strike.wav</plik_minutnika>
+	</ustawienia_okna>
+
+	<ustawienia_logiki>
+		<plik_slowka>slowka.nauka</plik_slowka>
+		<plik_ulice>ulice.nauka</plik_ulice>
+		<biezacy_tryb>B</biezacy_tryb>
+		<procent_slowek_reszta_ulic>50</procent_slowek_reszta_ulic>
+	</ustawienia_logiki>
+
+</nauka_slowek>

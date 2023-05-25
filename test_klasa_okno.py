@@ -18,7 +18,7 @@ class TestKlasaOkno(UT.TestCase):
         wynik=self.okno.wczytaj_ustawienia_programu()
         ust_okn,ust_log=wynik[0],wynik[1]
 
-        self.assertEqual(len(ust_okn),7)
+        self.assertEqual(len(ust_okn),8)
         self.assertEqual(len(ust_log),4)
 
         self.assertIsInstance(ust_okn,list)
@@ -31,6 +31,7 @@ class TestKlasaOkno(UT.TestCase):
         self.assertIsInstance(ust_okn[4],int)
         self.assertIsInstance(ust_okn[5],str)
         self.assertIsInstance(ust_okn[6],int)
+        self.assertIsInstance(ust_okn[7],str)
 
         self.assertIsInstance(ust_log[0],str)
         self.assertIsInstance(ust_log[1],str)
