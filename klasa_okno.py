@@ -111,12 +111,23 @@ class Okno:
 
         self.napis1=TK.Label(text="słowo1",font=self.czcionka_small)
         self.napis1.grid(row=0)
-        #self.entry1=TK.Entry(width=70,font=self.czcionka_big,state="readonly",bg='green') #,height=20)
-        self.entry1=TK.Entry(width=70,font=self.czcionka_big,bg='green') #,height=20)
+
+        self.entry1_tresc=TK.StringVar()
+        self.entry2_tresc=TK.StringVar()
+
+        self.entry1=TK.Entry(width=70,font=self.czcionka_big,textvariable=self.entry1_tresc)
+        self.entry1.config(state=TK.DISABLED,disabledbackground='green')
+        self.entry1.config(disabledforeground='black')
+
         self.entry1.grid(row=1)
         self.napis2=TK.Label(text="słowo2",font=self.czcionka_small)
         self.napis2.grid(row=2)
-        self.entry2=TK.Entry(width=70,font=self.czcionka_big,bg='green')
+
+        self.entry2=TK.Entry(width=70,font=self.czcionka_big,textvariable=self.entry2_tresc)
+        self.entry2.config(state=TK.DISABLED,disabledbackground='green')
+        self.entry2.config(disabledforeground='black')
+
+
         self.entry2.grid(row=3)
         self.pasekstanu=KPS.Pasekstanu(self.okno,self.czcionka_small)
         self.pasekstanu.grid(row=4,sticky='SWE')
@@ -278,11 +289,14 @@ class Okno:
             raise TypeError('ktory musi być 0/1. jest',ktory)
 
         if ktory==0:
-            self.entry1.delete(0,TK.END)
-            self.entry1.insert(0,tresc)
+            #self.entry1.delete(0,TK.END)
+            #self.entry1.insert(0,tresc)
+            print('ustawiam na',tresc)
+            self.entry1_tresc.set(tresc)
         else:
-            self.entry2.delete(0,TK.END)
-            self.entry2.insert(0,tresc)
+            #self.entry2.delete(0,TK.END)
+            #self.entry2.insert(0,tresc)
+            self.entry2_tresc.set(tresc)
 
     def czysc_pole_tekstowe(self,ktory):
         "górne i dolne pole do wyświetlania słówek/tłumaczeń/ulic/..."
@@ -290,9 +304,11 @@ class Okno:
             raise TypeError('ktory musi być 0/1. jest',ktory)
 
         if ktory==0:
-            self.entry1.delete(0,TK.END)
+            #self.entry1.delete(0,TK.END)
+            self.entry1_tresc.set('')
         else:
-            self.entry2.delete(0,TK.END)
+            #self.entry2.delete(0,TK.END)
+            self.entry2_tresc.set('')
 
     def cofnij_ilosc_wylos_biez_wpisu_ok(self,event):
         ""
