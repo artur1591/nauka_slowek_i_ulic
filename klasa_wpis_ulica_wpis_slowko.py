@@ -62,10 +62,15 @@ class WpisUlica:
         w razie niepowodzenia False
 
         warunki wstępne:
+            musi być 1 znak |
             musi mieć przynajmniej 1 spacje
             zawierać jeden z '|A', '|B', '|C'
         '''
+        if not isinstance(napis,str):
+            raise TypeError('str->WpisUlica.miał być str a jest',type(napis))
         #print('Unapis',napis)
+        if napis.count('|')!=1:
+            return False
         if not isinstance(napis,str):
             return False
         if napis.count(' ')==0:
@@ -149,10 +154,15 @@ class WpisSlowko(WpisUlica):
         w razie niepowodzenia False
 
         warunki wstępne:
+            musi być 1 znak |
             musi mieć przynajmniej 2 spacje
             zawierać jeden z ' A ', ' B ', ' C '
         '''
+        if not isinstance(napis,str):
+            raise TypeError('str->WpisSlowko.miał być str a jest',type(napis))
         #print('Snapis',napis)
+        if napis.count('|')!=1:
+            return False
         if not isinstance(napis,str):
             return False
         if napis.count(' ')<2:
