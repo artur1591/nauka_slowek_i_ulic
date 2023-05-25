@@ -46,6 +46,7 @@ class TestKlasaOkno(UT.TestCase):
         self.assertTrue(100<self.okno.rozm_x<=1920)
         self.assertTrue(100<self.okno.rozm_y<=920)
         self.assertTrue(self.okno.alarm_po_ilu_sek>0)
+        self.assertNotEqual(self.okno.plik_minutnika,'')
         self.assertTrue(self.okno.logika.biezacy_tryb in ['A','B','C'])
         self.assertIsInstance(self.okno.czcionka_big,TK.font.Font)
         self.assertIsInstance(self.okno.czcionka_middle,TK.font.Font)
