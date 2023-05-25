@@ -60,13 +60,8 @@ class Logika:
 
         zwraca False jak brak pliku
         zwraca False jak pusty plik
-        zwraca False jak są błędne dane
+        zwraca False jak są błędne dane(klasa WpisSlowko o tym decyduje)
         ustawia self.komunikat_bledu żeby było wiadomo co źle poszło
-
-        jak sprawdza że są błędne dane:
-            ilość | powinna być 1
-            powinno być tryb czyli zawierać jeden z ' A ' ' B ' ' C '
-            na końcu powinna być liczba
         '''
         #czy plik istnieje:
         if not OS.path.exists(self.plik_slowka):
@@ -83,34 +78,20 @@ class Logika:
 
         with open(self.plik_slowka) as plik:
             linie=plik.read()
-            #print('linie1',linie,'_')
+            #print('linieS1',linie,'_')
 
         linie=linie[:-1]
-        #print('linie2',linie,'_')
+        #print('linieS2',linie,'_')
 
         for linia in linie.split('\n'):
             #print('liniaS=',linia)
-            if linia.count('|')!=1:
-                self.komunikat_bledu='błędne dane wejściowe(słówka): brak | w linii:'+str(linia)
-                #print('błędne dane wejściowe. brak | w linii:',linia)
-                return False
-            if not any([linia.__contains__(wl) for wl in [' A',' B',' C']]):
-                self.komunikat_bledu='błędne dane wejściowe(słówka): brak trybu w linii:'+str(linia)
-                #print('błędne dane wejściowe. brak trybu w linii:',linia)
-                return False
-            if not linia.split()[-1].isdigit():
-                self.komunikat_bledu='błędne dane wejściowe(słówka): brak liczby na końcu w linii:'+str(linia)
-                #print('błędne dane wejściowe(słówka): brak liczby na końcu w linii:',linia)
-                return False
-            przerwa_po_pierwszy=linia.index('|')
-            tmp_pierwszy=linia[0:przerwa_po_pierwszy]
-            przerwa_po_trybie=linia.rindex(' ')
-            tmp_ile_x=linia[przerwa_po_trybie+1:].rstrip()
-            tmp_drugi=linia[przerwa_po_pierwszy+1:przerwa_po_trybie-2]
-            tmp_tryb=linia[przerwa_po_trybie-1:przerwa_po_trybie]
+            co_wyszlo=KWS.str_do_WpisSlowko(linia)
 
-            tmp=KWS(tmp_pierwszy,tmp_drugi,tmp_tryb,int(tmp_ile_x))
-            self.lista_slowek.append(tmp)
+            if co_wyszlo is False:
+                self.komunikat_bledu='str->WpisSlowko nieudany'
+                return False
+            else:
+                self.lista_slowek.append(co_wyszlo)
         #print('self.lista_slowek',self.lista_slowek)
 
         if len(self.lista_slowek)==0:
@@ -125,13 +106,8 @@ class Logika:
 
         zwraca False jak brak pliku
         zwraca False jak pusty plik
-        zwraca False jak są błędne dane
+        zwraca False jak są błędne dane(klasa WpisUlica o tym decyduje)
         ustawia self.komunikat_bledu żeby było wiadomo co źle poszło
-
-        jak sprawdza że są błędne dane:
-            ilość | powinna być 1
-            powinno być tryb czyli zawierać jeden z '|A' '|B' '|C'
-            na końcu powinna być liczba
         '''
         #czy plik istnieje:
         if not OS.path.exists(self.plik_ulice):
@@ -148,33 +124,20 @@ class Logika:
 
         with open(self.plik_ulice) as plik:
             linie=plik.read()
-            #print('linie1',linie,'_')
+            #print('linieU1',linie,'_')
 
         linie=linie[:-1]
-        #print('linie2',linie,'_')
+        #print('linieU2',linie,'_')
 
         for linia in linie.split('\n'):
             #print('liniaU=',linia)
-            if linia.count('|')!=1:
-                self.komunikat_bledu='błędne dane wejściowe(ulice): brak | w linii:'+str(linia)
-                #print('błędne dane wejściowe. brak | w linii:',linia)
-                return False
-            if not any([linia.__contains__(wl) for wl in ['|A','|B','|C']]):
-                self.komunikat_bledu='błędne dane wejściowe(ulice): brak trybu w linii:'+str(linia)
-                #print('błędne dane wejściowe. brak trybu w linii:',linia)
-                return False
-            if not linia.split()[-1].isdigit():
-                self.komunikat_bledu='błędne dane wejściowe(ulice): brak liczby na końcu w linii:'+str(linia)
-                #print('błędne dane wejściowe(ulice): brak liczby na końcu w linii:',linia)
-                return False
-            przerwa_po_pierwszy=linia.rindex('|')
-            tmp_pierwszy=linia[0:przerwa_po_pierwszy]
-            tmp_tryb=linia[przerwa_po_pierwszy+1:przerwa_po_pierwszy+2]
-            tmp_ile_x=linia[przerwa_po_pierwszy+3:]
+            co_wyszlo=KWU.str_do_WpisUlica(linia)
 
-            tmp=KWU(tmp_pierwszy,tmp_tryb,int(tmp_ile_x))
-            #print('tmpU',tmp)
-            self.lista_ulic.append(tmp)
+            if co_wyszlo is False:
+                self.komunikat_bledu='str->WpisUlica nieudany'
+                return False
+            else:
+                self.lista_ulic.append(co_wyszlo)
         #print('self.lista_ulic',self.lista_ulic)
 
         if len(self.lista_ulic)==0:
