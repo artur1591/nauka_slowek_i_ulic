@@ -73,15 +73,143 @@ class TestKlasaLogika(UT.TestCase):
             self.assertIsInstance(slowko,KW.WpisUlica)
         return True
 
-    def test_wczytaj_slowka(self):
+    def test_wczytaj_slowka_co_utworzyl(self):
         "czy tworzy lista_slowek,ktorej elementy sa klasy WpisSlowko"
 
         self.assertTrue(self.sprawdz_typy_z_listy_slowek())
 
-    def test_wczytaj_ulice(self):
+    def test_wczytaj_slowka_pusty_plik_brak_pliku(self):
+        "plik pusty + brak pliku"
+        dotychczasowy_plik=self.logika.plik_slowka
+
+        #pusty
+        self.logika.plik_slowka='test_slowkaEMPTY.nauka'
+        wynik1=self.logika.wczytaj_slowka()
+        self.assertFalse(wynik1)
+        self.assertNotEqual(self.logika.komunikat_bledu,'')
+
+        #wyzerowanie komunikatu błędu
+        self.logika.komunikat_bledu=''
+
+        #nieustniejacy
+        self.logika.plik_slowka='test_slowkaNIEISTNIEJACY.nauka'
+        wynik2=self.logika.wczytaj_slowka()
+        self.assertFalse(wynik2)
+        self.assertNotEqual(self.logika.komunikat_bledu,'')
+
+        #wyzerowanie komunikatu błędu
+        self.logika.komunikat_bledu=''
+
+        #na koniec przywroc poprawne dane
+        self.logika.plik_slowka=dotychczasowy_plik
+        wynik3=self.logika.wczytaj_slowka()
+        self.assertTrue(wynik3)
+        self.assertEqual(self.logika.komunikat_bledu,'')
+
+
+    def test_wczytaj_slowka_bledne_dane(self):
+        "jeśli dane są niepełne"
+        dotychczasowy_plik=self.logika.plik_slowka
+
+        #nowy plik slowka z błędem: brak znaku |
+        self.logika.plik_slowka='test_slowka2.nauka'
+        wynik2=self.logika.wczytaj_slowka()
+        self.assertFalse(wynik2)
+        self.assertTrue(self.logika.komunikat_bledu.__contains__('brak | w linii'))
+        #wyzerowanie komunikatu błędu
+        self.logika.komunikat_bledu=''
+
+        #nowy plik slowka z błędem: brak trybu
+        self.logika.plik_slowka='test_slowka3.nauka'
+        wynik3=self.logika.wczytaj_slowka()
+        self.assertFalse(wynik3)
+        self.assertTrue(self.logika.komunikat_bledu.__contains__('brak trybu w linii'))
+        #wyzerowanie komunikatu błędu
+        self.logika.komunikat_bledu=''
+
+        #nowy plik slowka z błędem: brak liczby na końcu
+        self.logika.plik_slowka='test_slowka4.nauka'
+        wynik4=self.logika.wczytaj_slowka()
+        self.assertFalse(wynik4)
+        #print('BRAK LICZBY',self.logika.komunikat_bledu)
+        self.assertTrue(self.logika.komunikat_bledu.__contains__('brak liczby na końcu'))
+        #wyzerowanie komunikatu błędu
+        self.logika.komunikat_bledu=''
+
+
+        #na koniec przywroc poprawne dane
+        self.logika.plik_slowka=dotychczasowy_plik
+        self.logika.wczytaj_slowka()
+        self.assertEqual(self.logika.komunikat_bledu,'')
+
+
+    def test_wczytaj_ulice_co_utworzyl(self):
         "czy tworzy lista_ulic, ktorej elementy są klasy WpisUlica"
 
         self.assertTrue(self.sprawdz_typy_z_listy_ulic())
+
+    def test_wczytaj_ulice_pusty_plik_brak_pliku(self):
+        "plik pusty + brak pliku"
+        dotychczasowy_plik=self.logika.plik_ulice
+
+        #pusty
+        self.logika.plik_ulice='test_uliceEMPTY.nauka'
+        wynik1=self.logika.wczytaj_ulice()
+        self.assertFalse(wynik1)
+        self.assertNotEqual(self.logika.komunikat_bledu,'')
+
+        #wyzerowanie komunikatu błędu
+        self.logika.komunikat_bledu=''
+
+        #nieustniejacy
+        self.logika.plik_ulice='test_uliceNIEISTNIEJACY.nauka'
+        wynik2=self.logika.wczytaj_ulice()
+        self.assertFalse(wynik2)
+        self.assertNotEqual(self.logika.komunikat_bledu,'')
+
+        #wyzerowanie komunikatu błędu
+        self.logika.komunikat_bledu=''
+
+        #na koniec przywroc poprawne dane
+        self.logika.plik_ulice=dotychczasowy_plik
+        wynik3=self.logika.wczytaj_ulice()
+        self.assertTrue(wynik3)
+        self.assertEqual(self.logika.komunikat_bledu,'')
+
+
+    def test_wczytaj_ulice_bledne_dane(self):
+        "jeśli dane są niepełne"
+        dotychczasowy_plik=self.logika.plik_ulice
+
+        #nowy plik ulice z błędem: brak znaku |
+        self.logika.plik_ulice='test_ulice2.nauka'
+        wynik2=self.logika.wczytaj_ulice()
+        self.assertFalse(wynik2)
+        self.assertTrue(self.logika.komunikat_bledu.__contains__('brak | w linii'))
+        #wyzerowanie komunikatu błędu
+        self.logika.komunikat_bledu=''
+
+        #nowy plik ulice z błędem: brak trybu
+        self.logika.plik_ulice='test_ulice3.nauka'
+        wynik3=self.logika.wczytaj_ulice()
+        self.assertFalse(wynik3)
+        self.assertTrue(self.logika.komunikat_bledu.__contains__('brak trybu w linii'))
+        #wyzerowanie komunikatu błędu
+        self.logika.komunikat_bledu=''
+
+        #nowy plik ulice z błędem: brak liczby na końcu
+        self.logika.plik_ulice='test_ulice4.nauka'
+        wynik4=self.logika.wczytaj_ulice()
+        self.assertFalse(wynik4)
+        self.assertTrue(self.logika.komunikat_bledu.__contains__('brak liczby na końcu'))
+        #wyzerowanie komunikatu błędu
+        self.logika.komunikat_bledu=''
+
+        #na koniec przywroc poprawne dane
+        self.logika.plik_ulice=dotychczasowy_plik
+        self.logika.wczytaj_ulice()
+        self.assertEqual(self.logika.komunikat_bledu,'')
+
 
     def test_zapisz_slowka(self):
         '''

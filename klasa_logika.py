@@ -1,11 +1,13 @@
 '''
 oddzielenie klasy Logika od klasy Okno
 '''
+import os as OS
 import random as RA
 from klasa_wpis_ulica_wpis_slowko import WpisSlowko as KWS
 from klasa_wpis_ulica_wpis_slowko import WpisUlica as KWU
 
 def sprawdzanie_param_inita(func):
+    "jakiś dekorator chciałem dać"
     def wewn(*arg):
         #print('arg[1]',arg[1])
         if not len(arg[1])==4:
@@ -34,6 +36,7 @@ class Logika:
         self.lista_zadan=list()
         self.lista_slowek=None
         self.lista_ulic=None
+        self.komunikat_bledu=''
 
         self.biezacy_tryb=ust_log[2]
         self.procent_slowek_reszta_ulic=ust_log[3]
@@ -50,46 +53,133 @@ class Logika:
         self.zapisz_ulice()
 
     def wczytaj_slowka(self):
-        "wypełnia self.lista_slowek listą typu WpisSlowko"
-        plik=open(self.plik_slowka)
-        surowa_lista=list(plik)
+        '''
+        wypełnia self.lista_slowek listą typu WpisSlowko
 
+        zwraca True jak się udało
+
+        zwraca False jak brak pliku
+        zwraca False jak pusty plik
+        zwraca False jak są błędne dane
+        ustawia self.komunikat_bledu żeby było wiadomo co źle poszło
+
+        jak sprawdza że są błędne dane:
+            ilość | powinna być 1
+            powinno być tryb czyli zawierać jeden z ' A ' ' B ' ' C '
+            na końcu powinna być liczba
+        '''
+        #czy plik istnieje:
+        if not OS.path.exists(self.plik_slowka):
+            self.komunikat_bledu='brakuje pliku plik_slowka('+self.plik_slowka+')'
+            return False
+
+        #czy plik niepusty:
+        if OS.stat(self.plik_slowka).st_size==0:
+            self.komunikat_bledu='plik_slowka(',self.plik_slowka,') jest pusty'
+            return False
+
+        #jak plik niepusty wczytywanie:
         self.lista_slowek=list()
 
-        for ktory in surowa_lista:
-            przerwa_po_pierwszy=ktory.index('|')
-            tmp_pierwszy=ktory[0:przerwa_po_pierwszy]
-            przerwa_po_trybie=ktory.rindex(' ')
-            tmp_ile_x=ktory[przerwa_po_trybie+1:].rstrip()
-            tmp_drugi=ktory[przerwa_po_pierwszy+1:przerwa_po_trybie-2]
-            tmp_tryb=ktory[przerwa_po_trybie-1:przerwa_po_trybie]
+        with open(self.plik_slowka) as plik:
+            linie=plik.read()
+            #print('linie1',linie,'_')
+
+        linie=linie[:-1]
+        #print('linie2',linie,'_')
+
+        for linia in linie.split('\n'):
+            #print('liniaS=',linia)
+            if linia.count('|')!=1:
+                self.komunikat_bledu='błędne dane wejściowe(słówka): brak | w linii:'+str(linia)
+                #print('błędne dane wejściowe. brak | w linii:',linia)
+                return False
+            if not any([linia.__contains__(wl) for wl in [' A',' B',' C']]):
+                self.komunikat_bledu='błędne dane wejściowe(słówka): brak trybu w linii:'+str(linia)
+                #print('błędne dane wejściowe. brak trybu w linii:',linia)
+                return False
+            if not linia.split()[-1].isdigit():
+                self.komunikat_bledu='błędne dane wejściowe(słówka): brak liczby na końcu w linii:'+str(linia)
+                #print('błędne dane wejściowe(słówka): brak liczby na końcu w linii:',linia)
+                return False
+            przerwa_po_pierwszy=linia.index('|')
+            tmp_pierwszy=linia[0:przerwa_po_pierwszy]
+            przerwa_po_trybie=linia.rindex(' ')
+            tmp_ile_x=linia[przerwa_po_trybie+1:].rstrip()
+            tmp_drugi=linia[przerwa_po_pierwszy+1:przerwa_po_trybie-2]
+            tmp_tryb=linia[przerwa_po_trybie-1:przerwa_po_trybie]
 
             tmp=KWS(tmp_pierwszy,tmp_drugi,tmp_tryb,int(tmp_ile_x))
             self.lista_slowek.append(tmp)
+        #print('self.lista_slowek',self.lista_slowek)
 
-        plik.close()
         if len(self.lista_slowek)==0:
-            raise ValueError('brak słówek w pliku wejściowym')
+            raise ValueError('brak słówek w lista_slowek')
+        return True
 
     def wczytaj_ulice(self):
-        "wypełnia self.lista_ulic listą type WpisUlica"
-        plik=open(self.plik_ulice)
-        surowa_lista=list(plik)
+        '''
+        wypełnia self.lista_ulic listą typu WpisUlica
 
+        zwraca True jak się udało
+
+        zwraca False jak brak pliku
+        zwraca False jak pusty plik
+        zwraca False jak są błędne dane
+        ustawia self.komunikat_bledu żeby było wiadomo co źle poszło
+
+        jak sprawdza że są błędne dane:
+            ilość | powinna być 1
+            powinno być tryb czyli zawierać jeden z '|A' '|B' '|C'
+            na końcu powinna być liczba
+        '''
+        #czy plik istnieje:
+        if not OS.path.exists(self.plik_ulice):
+            self.komunikat_bledu='brakuje pliku plik_ulice('+self.plik_ulice+')'
+            return False
+
+        #czy plik niepusty:
+        if OS.stat(self.plik_ulice).st_size==0:
+            self.komunikat_bledu='plik_ulice(',self.plik_ulice,') jest pusty'
+            return False
+
+        #jak plik niepusty wczytywanie:
         self.lista_ulic=list()
 
-        for ktory in surowa_lista:
-            przerwa_po_pierwszy=ktory.rindex('|')
-            tmp_pierwszy=ktory[0:przerwa_po_pierwszy]
-            tmp_tryb=ktory[przerwa_po_pierwszy+1:przerwa_po_pierwszy+2]
-            tmp_ile_x=ktory[przerwa_po_pierwszy+3:]
+        with open(self.plik_ulice) as plik:
+            linie=plik.read()
+            #print('linie1',linie,'_')
+
+        linie=linie[:-1]
+        #print('linie2',linie,'_')
+
+        for linia in linie.split('\n'):
+            #print('liniaU=',linia)
+            if linia.count('|')!=1:
+                self.komunikat_bledu='błędne dane wejściowe(ulice): brak | w linii:'+str(linia)
+                #print('błędne dane wejściowe. brak | w linii:',linia)
+                return False
+            if not any([linia.__contains__(wl) for wl in ['|A','|B','|C']]):
+                self.komunikat_bledu='błędne dane wejściowe(ulice): brak trybu w linii:'+str(linia)
+                #print('błędne dane wejściowe. brak trybu w linii:',linia)
+                return False
+            if not linia.split()[-1].isdigit():
+                self.komunikat_bledu='błędne dane wejściowe(ulice): brak liczby na końcu w linii:'+str(linia)
+                #print('błędne dane wejściowe(ulice): brak liczby na końcu w linii:',linia)
+                return False
+            przerwa_po_pierwszy=linia.rindex('|')
+            tmp_pierwszy=linia[0:przerwa_po_pierwszy]
+            tmp_tryb=linia[przerwa_po_pierwszy+1:przerwa_po_pierwszy+2]
+            tmp_ile_x=linia[przerwa_po_pierwszy+3:]
 
             tmp=KWU(tmp_pierwszy,tmp_tryb,int(tmp_ile_x))
+            #print('tmpU',tmp)
             self.lista_ulic.append(tmp)
+        #print('self.lista_ulic',self.lista_ulic)
 
-        plik.close()
         if len(self.lista_ulic)==0:
-            raise ValueError('brak ulic w pliku wejściowym')
+            raise ValueError('brak ulic w lista_ulic')
+        return True
 
     def zapisz_slowka(self):
         "self.lista_slowek do pliku okreslonego w self.plik_slowka"
@@ -342,14 +432,14 @@ class Logika:
         #print('na_jaki',na_jaki)
 
         #zapamietuje biezacy(zeby podmienic)
-        #dotychczasowy=self.biezacy_wpis
+        dotychczasowy=self.biezacy_wpis
         #print('dotychczasowy',dotychczasowy)
 
         #aktualizacja trybu + ile_razy_wylos zeruj
         self.biezacy_wpis.tryb=na_jaki
         self.biezacy_wpis.ile_razy_wylos=0
 
-        #poprawiony=self.biezacy_wpis
+        poprawiony=self.biezacy_wpis
         #print('poprawiony',poprawiony)
 
         #aktualizuje w lista_*
@@ -507,3 +597,6 @@ class Logika:
     def zwroc_ust_log_do_zapisu(self):
         "daje składowe klasy do zapisu w pliku ustawienia.xml"
         return [self.plik_slowka,self.plik_ulice,self.biezacy_tryb,self.procent_slowek_reszta_ulic]
+
+if __name__=='__main__':
+    print('---są testy do tej klasy---')
