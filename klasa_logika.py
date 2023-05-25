@@ -183,25 +183,25 @@ class Logika:
 
     def zapisz_slowka(self):
         "self.lista_slowek do pliku okreslonego w self.plik_slowka"
-        plik=open(self.plik_slowka,'w')
-
         #sortuj dla czytelności pliku
         self.lista_slowek.sort()
 
-        for wpis in self.lista_slowek:
-            plik.write(str(wpis)+'\n')
-        plik.close()
+        with open(self.plik_slowka,'w') as plik:
+            for wpis in self.lista_slowek:
+                plik.write(str(wpis)+'\n')
+
+        return True
 
     def zapisz_ulice(self):
         "self.lista_ulic do pliku określonego w self.plik_ulice"
-        plik=open(self.plik_ulice,"w")
-
         #sortuj dla czytelności pliku
         self.lista_ulic.sort()
 
-        for wpis in self.lista_ulic:
-            plik.write(str(wpis)+'\n')
-        plik.close()
+        with open(self.plik_ulice,"w") as plik:
+            for wpis in self.lista_ulic:
+                plik.write(str(wpis)+'\n')
+
+        return True
 
     def czy_sa_slowka_w_trybie(self):
         '''

@@ -221,7 +221,8 @@ class TestKlasaLogika(UT.TestCase):
         '''
         self.assertTrue(self.sprawdz_typy_z_listy_slowek())
 
-        self.logika.zapisz_slowka()
+        wynik=self.logika.zapisz_slowka()
+        self.assertTrue(wynik)
 
         jaki_plik=self.logika.plik_slowka
         rozmiar_pliku=OS.stat(jaki_plik).st_size
@@ -237,7 +238,8 @@ class TestKlasaLogika(UT.TestCase):
         '''
         self.assertTrue(self.sprawdz_typy_z_listy_ulic())
 
-        self.logika.zapisz_ulice()
+        wynik=self.logika.zapisz_ulice()
+        self.assertTrue(wynik)
 
         jaki_plik=self.logika.plik_ulice
         rozmiar_pliku=OS.stat(jaki_plik).st_size
