@@ -33,16 +33,13 @@ class Pasekstanu(tk.Frame):
         for ktory in range(3):
             self.columnconfigure(ktory,weight=self.szer[ktory])
 
-        self.napis=[0,0,0]
+        self.napis=[]
 
         for ktory in range(3):
-            self.napis[ktory]=tk.Label(self,text=" ".center(self.szer[ktory]))
+            self.napis.append(tk.Label(self,text=" ".center(self.szer[ktory]),bd=1,
+                                        relief=tk.SUNKEN,font=czcionka,bg='grey'))
         for ktory in range(3):
-            self.napis[ktory].config(bd=1,relief=tk.SUNKEN,font=czcionka,bg='grey')
-
-        self.napis[0].grid(row=0,column=0,sticky='EW')
-        self.napis[1].grid(row=0,column=1,sticky='EW')
-        self.napis[2].grid(row=0,column=2,sticky='EW')
+            self.napis[ktory].grid(row=0,column=ktory,sticky='EW')
 
         self.timer=[0,0,0]
         for ktory in range(3):
@@ -50,7 +47,7 @@ class Pasekstanu(tk.Frame):
 
     def ustaw(self,*,ktory,tresc=None,na_ile_sek=0):
         '''
-        ktory=0/1/2
+        ktory może być albo 0 albo 1 albo 2
         '''
         #print('ustaw:',ktory,'_',tresc,'=',na_ile_sek)
         self.napis[ktory].config(text=tresc.center(self.szer[ktory]))
@@ -82,6 +79,5 @@ class Pasekstanu(tk.Frame):
         "co z tym?"
         print('vars=',vars())
         print('arg przekazane',kwargs)
-        self.napis[0].config(**kwargs)
-        self.napis[1].config(**kwargs)
-        self.napis[2].config(**kwargs)
+        for ktory in range(3):
+            self.napis[ktory].config(**kwargs)
