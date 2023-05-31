@@ -2,9 +2,11 @@
 oddzielenie klasy Logika od klasy Okno
 '''
 import os as OS
+import datetime as DT
 import random as RA
-from klasa_wpis_ulica_wpis_slowko import WpisSlowko as KWS
+import klasa_wpis_ulica_wpis_slowko as KW
 from klasa_wpis_ulica_wpis_slowko import WpisUlica as KWU
+from klasa_wpis_ulica_wpis_slowko import WpisSlowko as KWS
 
 def sprawdzanie_param_inita(func):
     "jakiś dekorator chciałem dać"
@@ -14,9 +16,9 @@ def sprawdzanie_param_inita(func):
             raise ValueError('zły zestaw arg wejsciowych klasy Logika.jest',arg)
 
         if arg[1][0]=='':
-            raise ValueError('plik slowka powinien byc niepusty')
-        if arg[1][1]=='':
             raise ValueError('plik ulice powinien byc niepusty')
+        if arg[1][1]=='':
+            raise ValueError('plik slowka powinien byc niepusty')
         if not arg[1][2] in ['A','B','C']:
             raise ValueError('tryb powinien byc A/B/C. jest',arg[1][2])
         if int(arg[1][3])<0 or int(arg[1][3])>100:
@@ -26,13 +28,19 @@ def sprawdzanie_param_inita(func):
     return wewn
 
 class Logika:
-    "..."
+    '''
+    self.komunikat_bledu ustawiany przez:
+        wczytaj_slowka,wczytaj_ulice,zrob_liste_zadan
+
+    zerowany:
+        zrob_liste_zadan,
+    '''
     @sprawdzanie_param_inita
     def __init__(self,ust_log):
         "potrzebuje argumentów początkowych"
         #print('ustL=',ust_log)
-        self.plik_slowka=ust_log[0]
-        self.plik_ulice=ust_log[1]
+        self.plik_ulice=ust_log[0]
+        self.plik_slowka=ust_log[1]
         self.lista_zadan=list()
         self.lista_slowek=None
         self.lista_ulic=None
@@ -44,13 +52,71 @@ class Logika:
         self.biezacy_wpis=None
         self.rodzaj_biezacego_wpisu=''
 
-        self.wczytaj_slowka()
+        #main
         self.wczytaj_ulice()
+        self.wczytaj_slowka()
+        if self.komunikat_bledu=='':
+            self.ustaw_biezacy_tryb(self.biezacy_tryb)
 
     def zamknij(self):
         "taki __del__"
-        self.zapisz_slowka()
-        self.zapisz_ulice()
+        if self.komunikat_bledu=='':
+            self.zapisz_ulice()
+            self.zapisz_slowka()
+            print('---czyste zamknięcie programu---')
+        else:
+            print('niezapisuje ulic,słówek bo błąd:',self.komunikat_bledu)
+
+    def wczytaj_ulice(self):
+        '''
+        wypełnia self.lista_ulic listą typu WpisUlica
+
+        zwraca True jak się udało
+
+        zwraca False jak brak pliku
+        zwraca False jak pusty plik
+        zwraca False jak są błędne dane(klasa WpisUlica o tym decyduje)
+        ustawia self.komunikat_bledu żeby było wiadomo co źle poszło
+        (może też wypisać w konsoli)
+        '''
+        #czy plik istnieje:
+        if not OS.path.exists(self.plik_ulice):
+            self.komunikat_bledu='brakuje pliku plik_ulice('+self.plik_ulice+')'
+            return False
+
+        #czy plik niepusty:
+        if OS.stat(self.plik_ulice).st_size==0:
+            self.komunikat_bledu='plik_ulice(',self.plik_ulice,') jest pusty'
+            return False
+
+        #jak plik niepusty wczytywanie:
+        self.lista_ulic=list()
+
+        with open(self.plik_ulice) as plik:
+            linie=plik.read()
+            #print('linieU1',linie,'_')
+
+        linie=linie[:-1]
+        #print('linieU2',linie,'_')
+
+        for linia in linie.split('\n'):
+            #print('liniaU1=',linia)
+            co_wyszlo=KW.str_do_wpis_ulica(linia)
+            #print('co_wyszloU',co_wyszlo,'_')
+            #if isinstance(co_wyszlo,KWU):
+            #    print('dobrze str->WpisUlica')
+
+            if co_wyszlo is False:
+                self.komunikat_bledu='str->WpisUlica nieudany'
+                print('wczytując ulice.linia:',linia,'_')
+                print('błąd:',self.komunikat_bledu)
+                return False
+            self.lista_ulic.append(co_wyszlo)
+        #print('self.lista_ulic',self.lista_ulic)
+
+        if len(self.lista_ulic)==0:
+            raise ValueError('brak ulic w lista_ulic')
+        return True
 
     def wczytaj_slowka(self):
         '''
@@ -62,6 +128,7 @@ class Logika:
         zwraca False jak pusty plik
         zwraca False jak są błędne dane(klasa WpisSlowko o tym decyduje)
         ustawia self.komunikat_bledu żeby było wiadomo co źle poszło
+        (może też wypisać w konsoli)
         '''
         #czy plik istnieje:
         if not OS.path.exists(self.plik_slowka):
@@ -85,69 +152,63 @@ class Logika:
 
         for linia in linie.split('\n'):
             #print('liniaS=',linia)
-            co_wyszlo=KWS.str_do_WpisSlowko(linia)
+            co_wyszlo=KW.str_do_wpis_slowko(linia)
+            #if isinstance(co_wyszlo,KWS):
+            #    print('dobrze str->WpisSlowko')
 
             if co_wyszlo is False:
                 self.komunikat_bledu='str->WpisSlowko nieudany'
+                print('wczytując słówka.linia:',linia,'_')
+                print('błąd:',self.komunikat_bledu)
                 return False
-            else:
-                self.lista_slowek.append(co_wyszlo)
+            self.lista_slowek.append(co_wyszlo)
         #print('self.lista_slowek',self.lista_slowek)
 
         if len(self.lista_slowek)==0:
             raise ValueError('brak słówek w lista_slowek')
         return True
 
-    def wczytaj_ulice(self):
+
+    def zrob_kopie_bezpieczenstwa(self,jakiego_pliku,komentarz=''):
         '''
-        wypełnia self.lista_ulic listą typu WpisUlica
-
-        zwraca True jak się udało
-
-        zwraca False jak brak pliku
-        zwraca False jak pusty plik
-        zwraca False jak są błędne dane(klasa WpisUlica o tym decyduje)
-        ustawia self.komunikat_bledu żeby było wiadomo co źle poszło
+        jakby między wczytaniem a zapisem wydarzyło się coś dziwnego
+        zmienia nazwę plikowi który był. więc zapisanie nawet niepoprawne przejdzie
         '''
-        #czy plik istnieje:
-        if not OS.path.exists(self.plik_ulice):
-            self.komunikat_bledu='brakuje pliku plik_ulice('+self.plik_ulice+')'
-            return False
+        nowa_nazwa=jakiego_pliku+str(DT.datetime.today())
+        OS.rename(jakiego_pliku,nowa_nazwa)
+        print('---robię kopie bezpieczeństwa pliku:',nowa_nazwa,'---',komentarz)
 
-        #czy plik niepusty:
-        if OS.stat(self.plik_ulice).st_size==0:
-            self.komunikat_bledu='plik_ulice(',self.plik_ulice,') jest pusty'
-            return False
+    def zapisz_ulice(self):
+        '''
+        self.lista_ulic do pliku określonego w self.plik_ulice
 
-        #jak plik niepusty wczytywanie:
-        self.lista_ulic=list()
+        jeśli lista_ulic ma mniej niż 2 elementy to tworzy kopie bezpieczeństwa
+        bo pewnie coś poszło źle
+        '''
+        #sortuj dla czytelności pliku
+        self.lista_ulic.sort()
 
-        with open(self.plik_ulice) as plik:
-            linie=plik.read()
-            #print('linieU1',linie,'_')
+        if len(self.lista_ulic)<2:
+            self.zrob_kopie_bezpieczenstwa(self.plik_ulice,"podejrzanie mało wpisów")
 
-        linie=linie[:-1]
-        #print('linieU2',linie,'_')
+        with open(self.plik_ulice,"w") as plik:
+            for wpis in self.lista_ulic:
+                plik.write(str(wpis)+'\n')
 
-        for linia in linie.split('\n'):
-            #print('liniaU=',linia)
-            co_wyszlo=KWU.str_do_WpisUlica(linia)
-
-            if co_wyszlo is False:
-                self.komunikat_bledu='str->WpisUlica nieudany'
-                return False
-            else:
-                self.lista_ulic.append(co_wyszlo)
-        #print('self.lista_ulic',self.lista_ulic)
-
-        if len(self.lista_ulic)==0:
-            raise ValueError('brak ulic w lista_ulic')
         return True
 
     def zapisz_slowka(self):
-        "self.lista_slowek do pliku okreslonego w self.plik_slowka"
+        '''
+        self.lista_slowek do pliku okreslonego w self.plik_slowka
+
+        jeśli lista_ulic ma mniej niż 2 elementy to tworzy kopie bezpieczeństwa
+        bo pewnie coś poszło źle
+        '''
         #sortuj dla czytelności pliku
         self.lista_slowek.sort()
+
+        if len(self.lista_slowek)<2:
+            self.zrob_kopie_bezpieczenstwa(self.plik_slowka,"podejrzanie mało wpisów")
 
         with open(self.plik_slowka,'w') as plik:
             for wpis in self.lista_slowek:
@@ -155,16 +216,15 @@ class Logika:
 
         return True
 
-    def zapisz_ulice(self):
-        "self.lista_ulic do pliku określonego w self.plik_ulice"
-        #sortuj dla czytelności pliku
-        self.lista_ulic.sort()
+    def czy_sa_ulice_w_trybie(self):
+        '''
+        potrzebne przy zmianie trybu
+        '''
+        for ulica in self.lista_ulic:
+            if ulica.tryb==self.biezacy_tryb:
+                return True
 
-        with open(self.plik_ulice,"w") as plik:
-            for wpis in self.lista_ulic:
-                plik.write(str(wpis)+'\n')
-
-        return True
+        return False
 
     def czy_sa_slowka_w_trybie(self):
         '''
@@ -176,22 +236,17 @@ class Logika:
 
         return False
 
-    def czy_sa_ulice_w_trybie(self):
-        '''
-        potrzebne przy zmianie trybu
-        jawnie określony tryb dla czytelności
-        '''
-        for ulica in self.lista_ulic:
-            if ulica.tryb==self.biezacy_tryb:
-                return True
-
-        return False
 
     def zrob_liste_zadan(self):
         '''
         lista_zadan żeby były albo 'u' albo 's1' wg procent_slowek_reszta_ulic
         ale lista skorygowana o obecność/brak słówek/ulic w danym trybie
             (wtedy tylko istniejące na liście zadan)
+
+        zwraca False jak brakuje słówek i ulic w danym trybie
+            i ustawia self.komunikat_bledu, zeruje rodzaj_biezacego_wpisu+biezacy_wpis
+        zwraca True jak sie udało zrobić listę w danym trybie
+            i czyści komunikat_bledu (self.komunikat_bledu='')
         '''
         self.lista_zadan=list()
         #print('czy_sa_slowka_w_trybie',self.biezacy_tryb,self.czy_sa_slowka_w_trybie())
@@ -211,15 +266,23 @@ class Logika:
             ile_slowek=int(ile_zrobic*self.procent_slowek_reszta_ulic/100)
             ile_ulic=ile_zrobic-ile_slowek
             #print('ile_slowek',ile_slowek,'ile_ulic',ile_ulic)
-
-        for _ in range(ile_slowek):
-            self.lista_zadan.append('s1')
+        if not self.czy_sa_slowka_w_trybie() and not self.czy_sa_ulice_w_trybie():
+            self.komunikat_bledu='brak ulic i słówek z trybie'+self.biezacy_tryb
+            self.biezacy_wpis=''
+            self.rodzaj_biezacego_wpisu=''
+            return False
 
         for _ in range(ile_ulic):
             self.lista_zadan.append('u')
 
+        for _ in range(ile_slowek):
+            self.lista_zadan.append('s1')
+
         RA.shuffle(self.lista_zadan)
         #print('lista_zadan',self.lista_zadan)
+        self.komunikat_bledu=''
+        #print('komunikat_bledu wyzerowany')
+        return True
 
     def wez_z_listy_zadan(self):
         "daje kolejne z listy zadan i w razie potrzeby uzupełnia ją(od końca)"
@@ -227,6 +290,30 @@ class Logika:
             self.zrob_liste_zadan()
 
         return self.lista_zadan.pop()
+
+    def jaki_najrzadziej_ulica(self):
+        '''
+        tylko z tych z biezacy_tryb
+        zwraca int-a jak są ulice z biezacy_tryb
+        zwraca False jak brakuje ulic z biezacy_tryb
+        '''
+        lista_ulic_z_biez_tryb=list()
+
+        for ulica in self.lista_ulic:
+            if ulica.tryb==self.biezacy_tryb:
+                lista_ulic_z_biez_tryb.append(ulica)
+        #print('lista_ulic_z_biez_tryb(',self.biezacy_tryb,')',lista_ulic_z_biez_tryb)
+
+        if len(lista_ulic_z_biez_tryb)==0:
+            return False
+
+        najrzadsza_ulica_int=lista_ulic_z_biez_tryb[0].ile_razy_wylos
+
+        for ktore in lista_ulic_z_biez_tryb:
+            if ktore.ile_razy_wylos<najrzadsza_ulica_int:
+                najrzadsza_ulica_int=ktore.ile_razy_wylos
+
+        return najrzadsza_ulica_int
 
     def jaki_najrzadziej_slowko(self):
         '''
@@ -252,29 +339,35 @@ class Logika:
 
         return najrzadsze_slowko_int
 
-    def jaki_najrzadziej_ulica(self):
+    def wylosuj_ulice_z_inkrem(self):
         '''
-        tylko z tych z biezacy_tryb
-        zwraca int-a jak są ulice z biezacy_tryb
-        zwraca False jak brakuje ulic z biezacy_tryb
+        wylosuj takie jak biezacy_tryb
+        jak lista pusta lub brak ulic z bieżacym trybem zwraca False.
+        powienien zwrócić typ WpisUlica
         '''
-        lista_ulic_z_biez_tryb=list()
-
-        for ulica in self.lista_ulic:
-            if ulica.tryb==self.biezacy_tryb:
-                lista_ulic_z_biez_tryb.append(ulica)
-        #print('lista_ulic_z_biez_tryb(',self.biezacy_tryb,')',lista_ulic_z_biez_tryb)
-
-        if len(lista_ulic_z_biez_tryb)==0:
+        if len(self.lista_slowek)==0:
             return False
 
-        najrzadsza_ulica_int=lista_ulic_z_biez_tryb[0].ile_razy_wylos
+        najrzadsze=self.jaki_najrzadziej_ulica()
+        if najrzadsze is False:
+            return False
 
-        for ktore in lista_ulic_z_biez_tryb:
-            if ktore.ile_razy_wylos<najrzadsza_ulica_int:
-                najrzadsza_ulica_int=ktore.ile_razy_wylos
+        lista_najrzadszych=[]
 
-        return najrzadsza_ulica_int
+        for wpis in self.lista_ulic:
+            if wpis.ile_razy_wylos==najrzadsze and wpis.tryb==self.biezacy_tryb:
+                lista_najrzadszych.append(wpis)
+
+        wylosowane=RA.choice(lista_najrzadszych)
+        #print('wylosowane',wylosowane)
+
+        #inkrem:
+        for wpisy in self.lista_ulic:
+            if wpisy==wylosowane:
+                wpisy.ile_razy_wylos+=1
+                break
+        #print('po',self.lista_ulic)
+        return wylosowane
 
     def wylosuj_slowko_z_inkrem(self):
         '''
@@ -310,44 +403,14 @@ class Logika:
         #print('po',self.lista_slowek)
         return wylosowane
 
-    def wylosuj_ulice_z_inkrem(self):
-        '''
-        wylosuj takie jak biezacy_tryb
-        jak lista pusta lub brak ulic z bieżacym trybem zwraca False.
-        powienien zwrócić typ WpisUlica
-        '''
-        if len(self.lista_slowek)==0:
-            return False
-
-        najrzadsze=self.jaki_najrzadziej_ulica()
-        if najrzadsze is False:
-            return False
-
-        lista_najrzadszych=[]
-
+    def zeruj_ulice(self):
+        "ulice z lista_ulic ile_razy_wylos=0"
         for wpis in self.lista_ulic:
-            if wpis.ile_razy_wylos==najrzadsze and wpis.tryb==self.biezacy_tryb:
-                lista_najrzadszych.append(wpis)
-
-        wylosowane=RA.choice(lista_najrzadszych)
-        #print('wylosowane',wylosowane)
-
-        #inkrem:
-        for wpisy in self.lista_ulic:
-            if wpisy==wylosowane:
-                wpisy.ile_razy_wylos+=1
-                break
-        #print('po',self.lista_ulic)
-        return wylosowane
+            wpis.ile_razy_wylos=0
 
     def zeruj_slowka(self):
         "slowka z lista_slowek ile_razy_wylos=0"
         for wpis in self.lista_slowek:
-            wpis.ile_razy_wylos=0
-
-    def zeruj_ulice(self):
-        "ulice z lista_ulic ile_razy_wylos=0"
-        for wpis in self.lista_ulic:
             wpis.ile_razy_wylos=0
 
     def ustaw_biezacy_tryb(self,na_jaki):
@@ -370,7 +433,6 @@ class Logika:
         aktualizuje liste_zadan
         zwraca nowy biezacy tryb
         '''
-
         if self.biezacy_tryb=='A':
             self.biezacy_tryb='B'
         elif self.biezacy_tryb=='B':
@@ -437,12 +499,14 @@ class Logika:
             przy pomocy == czyli konieczne ścisłe dopasowanie
         zwraca True jak istnieje taki lub False jak nie ma takiego
         '''
-        if not isinstance(jaki_wpis,KWS) and not isinstance(jaki_wpis,KWU):
+        if not isinstance(jaki_wpis,KWU):
+            #jeden warunek obejmuje bazową i pochodną
             raise TypeError('czy_wpis_istnieje. typ=',type(jaki_wpis))
 
-        if isinstance(jaki_wpis,KWS):
-            return jaki_wpis in self.lista_slowek
-        return jaki_wpis in self.lista_ulic
+        if type(jaki_wpis) is KWU:
+            return jaki_wpis in self.lista_ulic
+
+        return jaki_wpis in self.lista_slowek
 
     def szukaj_wpis(self,szukany_str,*,typ):
         '''
@@ -485,7 +549,6 @@ class Logika:
             return znalezione_wpisy[0]
         return znalezione_wpisy
 
-
     def dodaj_wpis(self,nowy_wpis):
         '''
         sprawdza czy jest taki: f.czy_wpis_istnieje()
@@ -516,14 +579,15 @@ class Logika:
         return True jak sie udalo
         return False jak nie
         '''
-        if not isinstance(nowy_wpis,KWS) and not isinstance(nowy_wpis,KWU):
+        if not isinstance(nowy_wpis,KWU):
+            #jeden warunek obejmuję klasę bazową i pochodną
             raise TypeError('zmien_wpis typy=',type(stary_wpis),type(nowy_wpis))
 
         if type(stary_wpis) is not type(nowy_wpis):
             raise TypeError("nieuprawniona zmiana typu wpisu")
 
         if self.czy_wpis_istnieje(stary_wpis) and not self.czy_wpis_istnieje(nowy_wpis):
-            if isinstance(stary_wpis,KWS):
+            if type(stary_wpis) is KWS:
                 indeks_starego=self.lista_slowek.index(stary_wpis)
                 self.lista_slowek[indeks_starego]=nowy_wpis
             else:
@@ -540,10 +604,11 @@ class Logika:
         True jak skasowal
         False jak nie
         '''
-        if not isinstance(do_kasow_wpis,KWS) and not isinstance(do_kasow_wpis,KWU):
+        if not isinstance(do_kasow_wpis,KWU):
+            #jeden warunek 2 klasy Wpis
             raise TypeError('kasować można Wpis a nie',type(do_kasow_wpis))
 
-        if isinstance(do_kasow_wpis,KWS):
+        if type(do_kasow_wpis) is KWS:
             #jak WpisSlowko
             for slowko in self.lista_slowek:
                 if do_kasow_wpis.pierwszy==slowko.pierwszy:
@@ -559,7 +624,7 @@ class Logika:
 
     def zwroc_ust_log_do_zapisu(self):
         "daje składowe klasy do zapisu w pliku ustawienia.xml"
-        return [self.plik_slowka,self.plik_ulice,self.biezacy_tryb,self.procent_slowek_reszta_ulic]
+        return [self.plik_ulice,self.plik_slowka,self.biezacy_tryb,self.procent_slowek_reszta_ulic]
 
 if __name__=='__main__':
     print('---są testy do tej klasy---')

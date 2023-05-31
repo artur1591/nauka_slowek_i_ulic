@@ -11,7 +11,7 @@ class TestKlasaLogika(UT.TestCase):
     ""
     def setUp(self):
         ""
-        ust_log=['test_slowka.nauka','test_ulice.nauka','A',50]
+        ust_log=['test_ulice.nauka','test_slowka.nauka','A',50]
         self.logika=KL.Logika(ust_log)
 
         self.wpis_zmyslonyS=KW.WpisSlowko("pankracy is a brick","pankracy to równy gość")
@@ -32,7 +32,8 @@ class TestKlasaLogika(UT.TestCase):
     def test_init_zle_dane(self):
         "błędne argumenty klasy Logika powinny zgłosić wyjątek z dekoratora"
         with self.assertRaises(ValueError):
-            ust_1=['test_slowka.nauka','test_ulice.nauka','A',111]
+            #ust_1=['test_slowka.nauka','test_ulice.nauka','A',111]
+            ust_1=['test_ulice.nauka','test_slowka.nauka','A',111]
             self.logika=KL.Logika(ust_1)
             ust_2=['test_slowka.nauka','','A',111]
             self.logika=KL.Logika(ust_2)
@@ -45,25 +46,17 @@ class TestKlasaLogika(UT.TestCase):
 
     def test_init_poprawne_dane(self):
         "czy typy sie zgadzają + wartości"
-        self.assertIsInstance(self.logika.plik_slowka,str)
-        self.assertNotEqual(self.logika.plik_slowka,'')
-
         self.assertIsInstance(self.logika.plik_ulice,str)
         self.assertNotEqual(self.logika.plik_ulice,'')
+
+        self.assertIsInstance(self.logika.plik_slowka,str)
+        self.assertNotEqual(self.logika.plik_slowka,'')
 
         self.assertIsInstance(self.logika.biezacy_tryb,str)
         self.assertTrue(self.logika.biezacy_tryb in ['A','B','C'])
 
         self.assertIsInstance(self.logika.procent_slowek_reszta_ulic,int)
         self.assertTrue(0<=self.logika.procent_slowek_reszta_ulic<=100)
-
-    def sprawdz_typy_z_listy_slowek(self):
-        ""
-        self.assertNotEqual(len(self.logika.lista_slowek),0,msg="chyba że plik slowka pusty")
-
-        for slowko in self.logika.lista_slowek:
-            self.assertIsInstance(slowko,KW.WpisSlowko)
-        return True
 
     def sprawdz_typy_z_listy_ulic(self):
         ""
@@ -73,75 +66,13 @@ class TestKlasaLogika(UT.TestCase):
             self.assertIsInstance(slowko,KW.WpisUlica)
         return True
 
-    def test_wczytaj_slowka_co_utworzyl(self):
-        "czy tworzy lista_slowek,ktorej elementy sa klasy WpisSlowko"
+    def sprawdz_typy_z_listy_slowek(self):
+        ""
+        self.assertNotEqual(len(self.logika.lista_slowek),0,msg="chyba że plik slowka pusty")
 
-        self.assertTrue(self.sprawdz_typy_z_listy_slowek())
-
-    def test_wczytaj_slowka_pusty_plik_brak_pliku(self):
-        "plik pusty + brak pliku"
-        dotychczasowy_plik=self.logika.plik_slowka
-
-        #pusty
-        self.logika.plik_slowka='test_slowkaEMPTY.nauka'
-        wynik1=self.logika.wczytaj_slowka()
-        self.assertFalse(wynik1)
-        self.assertNotEqual(self.logika.komunikat_bledu,'')
-
-        #wyzerowanie komunikatu błędu
-        self.logika.komunikat_bledu=''
-
-        #nieustniejacy
-        self.logika.plik_slowka='test_slowkaNIEISTNIEJACY.nauka'
-        wynik2=self.logika.wczytaj_slowka()
-        self.assertFalse(wynik2)
-        self.assertNotEqual(self.logika.komunikat_bledu,'')
-
-        #wyzerowanie komunikatu błędu
-        self.logika.komunikat_bledu=''
-
-        #na koniec przywroc poprawne dane
-        self.logika.plik_slowka=dotychczasowy_plik
-        wynik3=self.logika.wczytaj_slowka()
-        self.assertTrue(wynik3)
-        self.assertEqual(self.logika.komunikat_bledu,'')
-
-
-    def test_wczytaj_slowka_bledne_dane(self):
-        "jeśli dane są niepełne"
-        dotychczasowy_plik=self.logika.plik_slowka
-
-        #nowy plik slowka z błędem: brak znaku |
-        self.logika.plik_slowka='test_slowka2.nauka'
-        wynik2=self.logika.wczytaj_slowka()
-        self.assertFalse(wynik2)
-        self.assertTrue(self.logika.komunikat_bledu.__contains__('brak | w linii'))
-        #wyzerowanie komunikatu błędu
-        self.logika.komunikat_bledu=''
-
-        #nowy plik slowka z błędem: brak trybu
-        self.logika.plik_slowka='test_slowka3.nauka'
-        wynik3=self.logika.wczytaj_slowka()
-        self.assertFalse(wynik3)
-        self.assertTrue(self.logika.komunikat_bledu.__contains__('brak trybu w linii'))
-        #wyzerowanie komunikatu błędu
-        self.logika.komunikat_bledu=''
-
-        #nowy plik slowka z błędem: brak liczby na końcu
-        self.logika.plik_slowka='test_slowka4.nauka'
-        wynik4=self.logika.wczytaj_slowka()
-        self.assertFalse(wynik4)
-        #print('BRAK LICZBY',self.logika.komunikat_bledu)
-        self.assertTrue(self.logika.komunikat_bledu.__contains__('brak liczby na końcu'))
-        #wyzerowanie komunikatu błędu
-        self.logika.komunikat_bledu=''
-
-
-        #na koniec przywroc poprawne dane
-        self.logika.plik_slowka=dotychczasowy_plik
-        self.logika.wczytaj_slowka()
-        self.assertEqual(self.logika.komunikat_bledu,'')
-
+        for slowko in self.logika.lista_slowek:
+            self.assertIsInstance(slowko,KW.WpisSlowko)
+        return True
 
     def test_wczytaj_ulice_co_utworzyl(self):
         "czy tworzy lista_ulic, ktorej elementy są klasy WpisUlica"
@@ -156,7 +87,7 @@ class TestKlasaLogika(UT.TestCase):
         self.logika.plik_ulice='test_uliceEMPTY.nauka'
         wynik1=self.logika.wczytaj_ulice()
         self.assertFalse(wynik1)
-        self.assertNotEqual(self.logika.komunikat_bledu,'')
+        self.assertTrue(self.logika.komunikat_bledu.__contains__(') jest pusty'))
 
         #wyzerowanie komunikatu błędu
         self.logika.komunikat_bledu=''
@@ -165,7 +96,7 @@ class TestKlasaLogika(UT.TestCase):
         self.logika.plik_ulice='test_uliceNIEISTNIEJACY.nauka'
         wynik2=self.logika.wczytaj_ulice()
         self.assertFalse(wynik2)
-        self.assertNotEqual(self.logika.komunikat_bledu,'')
+        self.assertTrue(self.logika.komunikat_bledu.__contains__('brakuje pliku plik_ulice'))
 
         #wyzerowanie komunikatu błędu
         self.logika.komunikat_bledu=''
@@ -176,7 +107,6 @@ class TestKlasaLogika(UT.TestCase):
         self.assertTrue(wynik3)
         self.assertEqual(self.logika.komunikat_bledu,'')
 
-
     def test_wczytaj_ulice_bledne_dane(self):
         "jeśli dane są niepełne"
         dotychczasowy_plik=self.logika.plik_ulice
@@ -185,7 +115,7 @@ class TestKlasaLogika(UT.TestCase):
         self.logika.plik_ulice='test_ulice2.nauka'
         wynik2=self.logika.wczytaj_ulice()
         self.assertFalse(wynik2)
-        self.assertTrue(self.logika.komunikat_bledu.__contains__('brak | w linii'))
+        self.assertTrue(self.logika.komunikat_bledu=='str->WpisUlica nieudany')
         #wyzerowanie komunikatu błędu
         self.logika.komunikat_bledu=''
 
@@ -193,15 +123,17 @@ class TestKlasaLogika(UT.TestCase):
         self.logika.plik_ulice='test_ulice3.nauka'
         wynik3=self.logika.wczytaj_ulice()
         self.assertFalse(wynik3)
-        self.assertTrue(self.logika.komunikat_bledu.__contains__('brak trybu w linii'))
+        self.assertTrue(self.logika.komunikat_bledu=='str->WpisUlica nieudany')
         #wyzerowanie komunikatu błędu
         self.logika.komunikat_bledu=''
 
         #nowy plik ulice z błędem: brak liczby na końcu
         self.logika.plik_ulice='test_ulice4.nauka'
+        print('111')
         wynik4=self.logika.wczytaj_ulice()
+        print('222')
         self.assertFalse(wynik4)
-        self.assertTrue(self.logika.komunikat_bledu.__contains__('brak liczby na końcu'))
+        self.assertTrue(self.logika.komunikat_bledu=='str->WpisUlica nieudany')
         #wyzerowanie komunikatu błędu
         self.logika.komunikat_bledu=''
 
@@ -210,23 +142,71 @@ class TestKlasaLogika(UT.TestCase):
         self.logika.wczytaj_ulice()
         self.assertEqual(self.logika.komunikat_bledu,'')
 
+    def test_wczytaj_slowka_co_utworzyl(self):
+        "czy tworzy lista_slowek,ktorej elementy są klasy WpisSlowko"
 
-    def test_zapisz_slowka(self):
-        '''
-        przed wywołaniem sprawdza:
-            czy lista_slowek niepusta
-            czy lista_slowek jest listą typu WpisSlowko
-        po wywołaniu sprawdza:
-            czy plik_slowka niepusty
-        '''
         self.assertTrue(self.sprawdz_typy_z_listy_slowek())
 
-        wynik=self.logika.zapisz_slowka()
-        self.assertTrue(wynik)
+    def test_wczytaj_slowka_pusty_plik_brak_pliku(self):
+        "plik pusty + brak pliku"
+        dotychczasowy_plik=self.logika.plik_slowka
 
-        jaki_plik=self.logika.plik_slowka
-        rozmiar_pliku=OS.stat(jaki_plik).st_size
-        self.assertNotEqual(rozmiar_pliku,0)
+        #pusty
+        self.logika.plik_slowka='test_slowkaEMPTY.nauka'
+        wynik1=self.logika.wczytaj_slowka()
+        self.assertFalse(wynik1)
+        self.assertTrue(self.logika.komunikat_bledu.__contains__(') jest pusty'))
+
+        #wyzerowanie komunikatu błędu
+        self.logika.komunikat_bledu=''
+
+        #nieustniejacy
+        self.logika.plik_slowka='test_slowkaNIEISTNIEJACY.nauka'
+        wynik2=self.logika.wczytaj_slowka()
+        self.assertFalse(wynik2)
+        self.assertTrue(self.logika.komunikat_bledu.__contains__('brakuje pliku plik_slowka'))
+
+        #wyzerowanie komunikatu błędu
+        self.logika.komunikat_bledu=''
+
+        #na koniec przywroc poprawne dane
+        self.logika.plik_slowka=dotychczasowy_plik
+        wynik3=self.logika.wczytaj_slowka()
+        self.assertTrue(wynik3)
+        self.assertEqual(self.logika.komunikat_bledu,'')
+
+    def test_wczytaj_slowka_bledne_dane(self):
+        "jeśli dane są niepełne"
+        dotychczasowy_plik=self.logika.plik_slowka
+
+        #nowy plik slowka z błędem: brak znaku |
+        self.logika.plik_slowka='test_slowka2.nauka'
+        wynik2=self.logika.wczytaj_slowka()
+        self.assertFalse(wynik2)
+        self.assertTrue(self.logika.komunikat_bledu=='str->WpisSlowko nieudany')
+        #wyzerowanie komunikatu błędu
+        self.logika.komunikat_bledu=''
+
+        #nowy plik slowka z błędem: brak trybu
+        self.logika.plik_slowka='test_slowka3.nauka'
+        wynik3=self.logika.wczytaj_slowka()
+        self.assertFalse(wynik3)
+        self.assertTrue(self.logika.komunikat_bledu=='str->WpisSlowko nieudany')
+        #wyzerowanie komunikatu błędu
+        self.logika.komunikat_bledu=''
+
+        #nowy plik slowka z błędem: brak liczby na końcu
+        self.logika.plik_slowka='test_slowka4.nauka'
+        wynik4=self.logika.wczytaj_slowka()
+        self.assertFalse(wynik4)
+        self.assertTrue(self.logika.komunikat_bledu=='str->WpisSlowko nieudany')
+        #wyzerowanie komunikatu błędu
+        self.logika.komunikat_bledu=''
+
+        #na koniec przywroc poprawne dane
+        self.logika.plik_slowka=dotychczasowy_plik
+        self.logika.wczytaj_slowka()
+        self.assertEqual(self.logika.komunikat_bledu,'')
 
     def test_zapisz_ulice(self):
         '''
@@ -246,22 +226,22 @@ class TestKlasaLogika(UT.TestCase):
 
         self.assertNotEqual(rozmiar_pliku,0)
 
-    def test_zeruj_slowka(self):
-        "test zeruj_slowka"
+    def test_zapisz_slowka(self):
+        '''
+        przed wywołaniem sprawdza:
+            czy lista_slowek niepusta
+            czy lista_slowek jest listą typu WpisSlowko
+        po wywołaniu sprawdza:
+            czy plik_slowka niepusty
+        '''
+        self.assertTrue(self.sprawdz_typy_z_listy_slowek())
 
-        #zabezpiecz liste_slowek
-        zapasowa=CO.deepcopy(self.logika.lista_slowek)
+        wynik=self.logika.zapisz_slowka()
+        self.assertTrue(wynik)
 
-        #wykonaj funkcje
-        self.logika.zeruj_slowka()
-        #sprawdz czy wyzerowała
-        for slowko in self.logika.lista_slowek:
-            self.assertTrue(slowko.ile_razy_wylos==0)
-        #sprawdz czy zapasowa rozni się od biezacej
-        self.assertNotEqual(self.logika.lista_slowek,zapasowa)
-
-        #przywroc liste slowek po zerowaniu
-        self.logika.liste_slowek=zapasowa
+        jaki_plik=self.logika.plik_slowka
+        rozmiar_pliku=OS.stat(jaki_plik).st_size
+        self.assertNotEqual(rozmiar_pliku,0)
 
     def test_zeruj_ulice(self):
         "test zeruj_ulice"
@@ -280,24 +260,23 @@ class TestKlasaLogika(UT.TestCase):
         #przywroc liste ulic po zerowaniu
         self.logika.liste_ulic=zapasowa
 
+    def test_zeruj_slowka(self):
+        "test zeruj_slowka"
 
-    def test_czy_sa_slowka_w_trybie(self):
-        '''
-        ponieważ tryb się zmienia w trakcie programu
-        trzeba odnowić liste_zadan żeby niebyło dziur
-        w wynikach losowania
-        '''
-        self.logika.ustaw_biezacy_tryb('A') #są
-        wynik1=self.logika.czy_sa_slowka_w_trybie()
-        self.assertTrue(wynik1)
+        #zabezpiecz liste_slowek
+        zapasowa=CO.deepcopy(self.logika.lista_slowek)
 
-        self.logika.ustaw_biezacy_tryb('B') #są
-        wynik2=self.logika.czy_sa_slowka_w_trybie()
-        self.assertTrue(wynik2)
+        #wykonaj funkcje
+        self.logika.zeruj_slowka()
+        #sprawdz czy wyzerowała
+        for slowko in self.logika.lista_slowek:
+            self.assertTrue(slowko.ile_razy_wylos==0)
+        #sprawdz czy zapasowa rozni się od biezacej
+        self.assertNotEqual(self.logika.lista_slowek,zapasowa)
 
-        self.logika.ustaw_biezacy_tryb('C') #brak
-        wynik3=self.logika.czy_sa_slowka_w_trybie()
-        self.assertFalse(wynik3)
+        #przywroc liste slowek po zerowaniu
+        self.logika.liste_slowek=zapasowa
+
 
     def test_czy_sa_ulice_w_trybie(self):
         '''
@@ -317,8 +296,28 @@ class TestKlasaLogika(UT.TestCase):
         wynik3=self.logika.czy_sa_ulice_w_trybie()
         self.assertTrue(wynik3)
 
+    def test_czy_sa_slowka_w_trybie(self):
+        '''
+        ponieważ tryb się zmienia w trakcie programu
+        trzeba odnowić liste_zadan żeby niebyło dziur
+        w wynikach losowania
+        '''
+        self.logika.ustaw_biezacy_tryb('A') #są
+        wynik1=self.logika.czy_sa_slowka_w_trybie()
+        self.assertTrue(wynik1)
+
+        self.logika.ustaw_biezacy_tryb('B') #są
+        wynik2=self.logika.czy_sa_slowka_w_trybie()
+        self.assertTrue(wynik2)
+
+        self.logika.ustaw_biezacy_tryb('C') #brak
+        wynik3=self.logika.czy_sa_slowka_w_trybie()
+        self.assertFalse(wynik3)
+
     def test_zrob_liste_zadan(self):
         '''
+        zrob_liste_zadan zwraca True jak zrobiła self.lista_zadan
+        zwraca False jak się nie udało (+wypełnia self.komunikat_bledu)
         czy self.lista_zadan jest listą niepustą
         3przypadki:
             są tylko słówka w plikach
@@ -405,6 +404,33 @@ class TestKlasaLogika(UT.TestCase):
         self.logika.procent_slowek_reszta_ulic=50
         self.logika.zrob_liste_zadan()
 
+    def test_jaki_najrzadziej_ulica(self):
+        "bierze pod uwagę biezacy_tryb"
+        self.assertTrue(self.logika.biezacy_tryb=='A')
+        wynik_a=self.logika.jaki_najrzadziej_ulica()
+        #print('UbiezacyA=',self.logika.biezacy_tryb)
+        #print('Uwynik_a',wynik_a)
+        self.assertEqual(wynik_a,0)
+
+        #daj tryb na B:
+        self.logika.zmien_biezacy_tryb()
+        self.assertTrue(self.logika.biezacy_tryb=='B')
+        #print('UbiezacyB=',self.logika.biezacy_tryb)
+        wynik_b=self.logika.jaki_najrzadziej_ulica()
+        #print('Uwynik_b',wynik_b)
+        self.assertFalse(wynik_b)
+
+        #daj tryb na C:
+        self.logika.zmien_biezacy_tryb()
+        self.assertTrue(self.logika.biezacy_tryb=='C')
+        #print('UbiezacyC=',self.logika.biezacy_tryb)
+        wynik_c=self.logika.jaki_najrzadziej_ulica()
+        #print('Uwynik_c',wynik_c)
+        self.assertEqual(wynik_c,4)
+
+        #daj tryb A na koniec testu
+        self.logika.zmien_biezacy_tryb()
+        self.assertTrue(self.logika.biezacy_tryb=='A')
 
     def test_jaki_najrzadziej_slowko(self):
         "bierze pod uwagę biezacy_tryb"
@@ -434,33 +460,6 @@ class TestKlasaLogika(UT.TestCase):
         self.logika.zmien_biezacy_tryb()
         self.assertTrue(self.logika.biezacy_tryb=='A')
 
-    def test_jaki_najrzadziej_ulica(self):
-        "bierze pod uwagę biezacy_tryb"
-        self.assertTrue(self.logika.biezacy_tryb=='A')
-        wynik_a=self.logika.jaki_najrzadziej_ulica()
-        #print('UbiezacyA=',self.logika.biezacy_tryb)
-        #print('Uwynik_a',wynik_a)
-        self.assertEqual(wynik_a,0)
-
-        #daj tryb na B:
-        self.logika.zmien_biezacy_tryb()
-        self.assertTrue(self.logika.biezacy_tryb=='B')
-        #print('UbiezacyB=',self.logika.biezacy_tryb)
-        wynik_b=self.logika.jaki_najrzadziej_ulica()
-        #print('Uwynik_b',wynik_b)
-        self.assertFalse(wynik_b)
-
-        #daj tryb na C:
-        self.logika.zmien_biezacy_tryb()
-        self.assertTrue(self.logika.biezacy_tryb=='C')
-        #print('UbiezacyC=',self.logika.biezacy_tryb)
-        wynik_c=self.logika.jaki_najrzadziej_ulica()
-        #print('Uwynik_c',wynik_c)
-        self.assertEqual(wynik_c,4)
-
-        #daj tryb A na koniec testu
-        self.logika.zmien_biezacy_tryb()
-        self.assertTrue(self.logika.biezacy_tryb=='A')
 
     def rozpoznaj_inkrementacje_ilosci_wylos_ulic(self,stara_lista,nowa_lista):
         ""
@@ -484,65 +483,6 @@ class TestKlasaLogika(UT.TestCase):
 
         self.assertNotEqual(stara_lista,nowa_lista)
         return True
-
-    def test_wylosuj_slowko_z_inkrem_tryb_A(self):
-        '''
-        tylko tryb A
-        '''
-        #daj tryb na A
-        self.logika.ustaw_biezacy_tryb('A')
-
-        stara=CO.deepcopy(self.logika.lista_slowek)
-        #print('\nSstaraA',stara,id(stara))
-
-        wylosowane=self.logika.wylosuj_slowko_z_inkrem()
-        #print('SwylosowaneA',wylosowane)
-        #bo w test_slowka.nauka są słówka A
-        self.assertIsInstance(wylosowane,KW.WpisSlowko)
-        self.assertEqual(wylosowane.tryb,'A')
-
-        nowa=self.logika.lista_slowek
-        #print('SnowaA',nowa,id(nowa))
-        self.assertTrue(self.rozpoznaj_inkrementacje_ilosci_wylos_slowek(stara,nowa))
-
-
-
-    def test_wylosuj_slowko_z_inkrem_tryb_B(self):
-        "tylko tryb B"
-        #daj tryb na B
-        self.logika.ustaw_biezacy_tryb('B')
-
-        stara=CO.deepcopy(self.logika.lista_slowek)
-        #print('\nstaraB',stara,id(stara))
-
-        wylosowane=self.logika.wylosuj_slowko_z_inkrem()
-        #print('wylosowaneB',wylosowane)
-        #bo w test_slowka.nauka są słówka A
-        self.assertIsInstance(wylosowane,KW.WpisSlowko)
-        self.assertEqual(wylosowane.tryb,'B')
-
-        nowa=self.logika.lista_slowek
-        #print('nowaB',nowa,id(nowa))
-        self.assertTrue(self.rozpoznaj_inkrementacje_ilosci_wylos_slowek(stara,nowa))
-
-
-    def test_wylosuj_slowko_z_inkrem_tryb_C(self):
-        "tylko tryb C"
-        #daj tryb na C
-        self.logika.ustaw_biezacy_tryb('C')
-
-        stara=CO.deepcopy(self.logika.lista_slowek)
-        #print('\nstaraC',stara,id(stara))
-
-        wylosowane=self.logika.wylosuj_slowko_z_inkrem()
-        #print('wylosowaneC',wylosowane)
-        #bo w test_slowka.nauka brak słówek C
-        self.assertFalse(wylosowane)
-
-        nowa=self.logika.lista_slowek
-        #print('nowaC',nowa,id(nowa))
-
-        self.assertEqual(stara,nowa)
 
     def test_wylosuj_ulice_z_inkrem_tryb_A(self):
         '''
@@ -596,6 +536,62 @@ class TestKlasaLogika(UT.TestCase):
         #print('nowa ',nowa,id(nowa))
         self.assertTrue(self.rozpoznaj_inkrementacje_ilosci_wylos_ulic(stara,nowa))
 
+    def test_wylosuj_slowko_z_inkrem_tryb_A(self):
+        '''
+        tylko tryb A
+        '''
+        #daj tryb na A
+        self.logika.ustaw_biezacy_tryb('A')
+
+        stara=CO.deepcopy(self.logika.lista_slowek)
+        #print('\nSstaraA',stara,id(stara))
+
+        wylosowane=self.logika.wylosuj_slowko_z_inkrem()
+        #print('SwylosowaneA',wylosowane)
+        #bo w test_slowka.nauka są słówka A
+        self.assertIsInstance(wylosowane,KW.WpisSlowko)
+        self.assertEqual(wylosowane.tryb,'A')
+
+        nowa=self.logika.lista_slowek
+        #print('SnowaA',nowa,id(nowa))
+        self.assertTrue(self.rozpoznaj_inkrementacje_ilosci_wylos_slowek(stara,nowa))
+
+    def test_wylosuj_slowko_z_inkrem_tryb_B(self):
+        "tylko tryb B"
+        #daj tryb na B
+        self.logika.ustaw_biezacy_tryb('B')
+
+        stara=CO.deepcopy(self.logika.lista_slowek)
+        #print('\nstaraB',stara,id(stara))
+
+        wylosowane=self.logika.wylosuj_slowko_z_inkrem()
+        #print('wylosowaneB',wylosowane)
+        #bo w test_slowka.nauka są słówka A
+        self.assertIsInstance(wylosowane,KW.WpisSlowko)
+        self.assertEqual(wylosowane.tryb,'B')
+
+        nowa=self.logika.lista_slowek
+        #print('nowaB',nowa,id(nowa))
+        self.assertTrue(self.rozpoznaj_inkrementacje_ilosci_wylos_slowek(stara,nowa))
+
+    def test_wylosuj_slowko_z_inkrem_tryb_C(self):
+        "tylko tryb C"
+        #daj tryb na C
+        self.logika.ustaw_biezacy_tryb('C')
+
+        stara=CO.deepcopy(self.logika.lista_slowek)
+        #print('\nstaraC',stara,id(stara))
+
+        wylosowane=self.logika.wylosuj_slowko_z_inkrem()
+        #print('wylosowaneC',wylosowane)
+        #bo w test_slowka.nauka brak słówek C
+        self.assertFalse(wylosowane)
+
+        nowa=self.logika.lista_slowek
+        #print('nowaC',nowa,id(nowa))
+
+        self.assertEqual(stara,nowa)
+
     def test_ustaw_biezacy_tryb(self):
         "druga f.do zmiany trybu"
 
@@ -632,39 +628,6 @@ class TestKlasaLogika(UT.TestCase):
         #dla nastepnych zeby bylo:
         self.logika.biezacy_tryb='A'
 
-    def test_ustaw_tryb_biezacego_wpisu_slowko(self):
-        '''
-        zwraca True jak sie udalo
-        False jak nie
-        '''
-        #zły typ powinien dać wyjątek
-        with self.assertRaises(ValueError):
-            self.logika.ustaw_tryb_biezacego_wpisu('G')
-
-        #inicjalizacja biezacego wpisu
-        self.logika.biezacy_wpis=RA.choice(self.logika.lista_slowek)
-        #print('1biezacy',self.logika.biezacy_wpis)
-        stara=CO.deepcopy(self.logika.lista_slowek)
-
-        #teraz zmieniam tryb dla biezacego: daje na nastepny(A->B,B->C,C->A)
-        if self.logika.biezacy_wpis.tryb=='A':
-            self.logika.ustaw_tryb_biezacego_wpisu('B')
-            self.assertEqual(self.logika.biezacy_wpis.tryb,'B')
-            self.assertEqual(self.logika.biezacy_wpis.ile_razy_wylos,0)
-        elif self.logika.biezacy_wpis.tryb=='B':
-            self.logika.ustaw_tryb_biezacego_wpisu('C')
-            self.assertEqual(self.logika.biezacy_wpis.tryb,'C')
-            self.assertEqual(self.logika.biezacy_wpis.ile_razy_wylos,0)
-        else:
-            self.logika.ustaw_tryb_biezacego_wpisu('A')
-            self.assertEqual(self.logika.biezacy_wpis.tryb,'A')
-            self.assertEqual(self.logika.biezacy_wpis.ile_razy_wylos,0)
-
-        nowa=self.logika.lista_slowek
-        self.assertNotEqual(stara,nowa)
-
-
-
     def test_ustaw_tryb_biezacego_wpisu_ulica(self):
         '''
         zwraca True jak sie udalo
@@ -697,24 +660,36 @@ class TestKlasaLogika(UT.TestCase):
         nowa=self.logika.lista_ulic
         self.assertNotEqual(stara,nowa)
 
-    def test_cofnij_ilosc_wylos_biez_wpisu_slowko(self):
-        "w tej wersji biezacy A"
+    def test_ustaw_tryb_biezacego_wpisu_slowko(self):
+        '''
+        zwraca True jak sie udalo
+        False jak nie
+        '''
+        #zły typ powinien dać wyjątek
+        with self.assertRaises(ValueError):
+            self.logika.ustaw_tryb_biezacego_wpisu('G')
+
+        #inicjalizacja biezacego wpisu
         self.logika.biezacy_wpis=RA.choice(self.logika.lista_slowek)
-        stara_lista=CO.deepcopy(self.logika.lista_slowek)
+        #print('1biezacy',self.logika.biezacy_wpis)
+        stara=CO.deepcopy(self.logika.lista_slowek)
 
-        self.logika.cofnij_ilosc_wylos_biez_wpisu_lo()
-
-        nowa_lista=self.logika.lista_slowek
-        ind_rob_wpisu=self.logika.lista_slowek.index(self.logika.biezacy_wpis)
-        #print('ind_rob_wpisu',ind_rob_wpisu)
-        wieksze=stara_lista[ind_rob_wpisu].ile_razy_wylos
-        mniejsze=nowa_lista[ind_rob_wpisu].ile_razy_wylos
-        #print('w',wieksze,'m',mniejsze)
-
-        if wieksze==0:
-            self.assertEqual(wieksze,mniejsze)
+        #teraz zmieniam tryb dla biezacego: daje na nastepny(A->B,B->C,C->A)
+        if self.logika.biezacy_wpis.tryb=='A':
+            self.logika.ustaw_tryb_biezacego_wpisu('B')
+            self.assertEqual(self.logika.biezacy_wpis.tryb,'B')
+            self.assertEqual(self.logika.biezacy_wpis.ile_razy_wylos,0)
+        elif self.logika.biezacy_wpis.tryb=='B':
+            self.logika.ustaw_tryb_biezacego_wpisu('C')
+            self.assertEqual(self.logika.biezacy_wpis.tryb,'C')
+            self.assertEqual(self.logika.biezacy_wpis.ile_razy_wylos,0)
         else:
-            self.assertEqual(mniejsze+1,wieksze)
+            self.logika.ustaw_tryb_biezacego_wpisu('A')
+            self.assertEqual(self.logika.biezacy_wpis.tryb,'A')
+            self.assertEqual(self.logika.biezacy_wpis.ile_razy_wylos,0)
+
+        nowa=self.logika.lista_slowek
+        self.assertNotEqual(stara,nowa)
 
 
     def test_cofnij_ilosc_wylos_biez_wpisu_ulica(self):
@@ -735,6 +710,27 @@ class TestKlasaLogika(UT.TestCase):
             self.assertEqual(wieksze,mniejsze)
         else:
             self.assertEqual(mniejsze+1,wieksze)
+
+    def test_cofnij_ilosc_wylos_biez_wpisu_slowko(self):
+        "w tej wersji biezacy A"
+        self.logika.biezacy_wpis=RA.choice(self.logika.lista_slowek)
+        stara_lista=CO.deepcopy(self.logika.lista_slowek)
+
+        self.logika.cofnij_ilosc_wylos_biez_wpisu_lo()
+
+        nowa_lista=self.logika.lista_slowek
+        ind_rob_wpisu=self.logika.lista_slowek.index(self.logika.biezacy_wpis)
+        #print('ind_rob_wpisu',ind_rob_wpisu)
+        wieksze=stara_lista[ind_rob_wpisu].ile_razy_wylos
+        mniejsze=nowa_lista[ind_rob_wpisu].ile_razy_wylos
+        #print('w',wieksze,'m',mniejsze)
+
+        if wieksze==0:
+            self.assertEqual(wieksze,mniejsze)
+        else:
+            self.assertEqual(mniejsze+1,wieksze)
+
+
 
 
 
