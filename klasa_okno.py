@@ -1,18 +1,22 @@
+#!/usr/bin/python3.9
 '''
 oddzielenie klasy Okno od klasy Logika
 '''
 import tkinter as TK
 import tkinter.ttk as TTK
 import tkinter.font as FO
-import threading as TH
+import os
+import sys
 import time as TI
-import playsound as PS
-import klasa_pasek_stanu as KPS
+import threading as TH
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT']="hide"
+import pygame as PG
 import klasa_logika as KL
-import klasa_ustawienia as KU
+
+import klasa_pasek_stanu as KPS
 
 class Okno:
-    "..."
+    "dlaczego ta klasa nie dziedziczy po jakieś tkinter? co mi to da?"
     def __init__(self,procent_slowek=None):
         ""
         self.rozm_x=None
@@ -36,27 +40,34 @@ class Okno:
         if not procent_slowek is None:
             ust_log[3]=procent_slowek
         self.logika=KL.Logika(ust_log)
-        self.zbuduj_okno()
+
+        self.zbuduj_okno(self.logika.komunikat_bledu)
 
         self.fun_spacja()
 
         self.okno.mainloop()
 
     def zamknij(self,event=None):
-        ""
+        "..."
         self.watki_zakoncz=True
-        self.zapisz_ustawienia_programu()
+        if self.logika.komunikat_bledu=='':
+            self.zapisz_ustawienia_programu()
         self.logika.zamknij()
         self.pasekstanu.zamknij()
         self.okno.destroy()
 
     def wczytaj_ustawienia_programu(self):
-        "z pliku ustawienia.xml"
-        #ust=KU.Ustawienia()
-        #ust.wczytaj_z_pliku()
+        '''
+        z pliku ustawienia.xml
 
+        alarm_po_ilu_sek jeśli 0 to minutnik nie startuje
+        '''
         #return ust.zwroc_ustawienia_programu()
-        return [[1920,600,70,23,16,'Arial',120,'clock-strike.wav'],['slowka.nauka','ulice.nauka','A',100]]
+        #ust_okn=[1920,600,70,23,16,'Arial',3,'kimwilde.mp3']
+        #ust_okn=[1920,600,70,23,16,'Arial',120,'data-scaner.wav']
+        ust_okn=[1920,600,70,23,16,'Arial',0,'data-scaner.wav']
+        ust_log=['ulice.nauka','slowka.nauka','A',50]
+        return [ust_okn,ust_log]
 
     def zapisz_ustawienia_programu(self):
         "do pliku ustawienia.xml"
@@ -71,12 +82,12 @@ class Okno:
 
         ust_okn_lista=[roz_x,roz_y,czc_roz_b,czc_roz_m,czc_roz_s,czc_fam,ala_ile,ala_pli]
 
-        plik_slo=self.logika.plik_slowka
         plik_uli=self.logika.plik_ulice
+        plik_slo=self.logika.plik_slowka
         tryb=self.logika.biezacy_tryb
         procent=self.logika.procent_slowek_reszta_ulic
 
-        ust_log_lista=[plik_slo,plik_uli,tryb,procent]
+        ust_log_lista=[plik_uli,plik_slo,tryb,procent]
 
         wynik=[ust_okn_lista,ust_log_lista]
         print(wynik)
@@ -93,8 +104,11 @@ class Okno:
         self.alarm_po_ilu_sek=ust_okn[6]
         self.plik_minutnika=ust_okn[7]
 
-    def zbuduj_okno(self):
-        ""
+    def zbuduj_okno(self,potencjalny_blad):
+        '''
+        jak wszystko idzie dobrze buduje okno
+        ale jak jest komunikat_bledu z klasy Logika to prezentuje go w Oknie
+        '''
         self.okno.config(bg='grey')
         self.okno.title("Nauka Słówek i Ulic")
         self.okno.geometry(str(self.rozm_x)+"x"+str(self.rozm_y))
@@ -115,20 +129,16 @@ class Okno:
         self.entry1_tresc=TK.StringVar()
         self.entry2_tresc=TK.StringVar()
 
-        self.entry1=TK.Entry(width=70,font=self.czcionka_big,textvariable=self.entry1_tresc)
-        self.entry1.config(state=TK.DISABLED,disabledbackground='green')
-        self.entry1.config(disabledforeground='black')
-
+        self.entry1=TK.Entry(width=70,font=self.czcionka_big,textvariable=self.entry1_tresc,
+                    state=TK.DISABLED,disabledbackground='green',disabledforeground='black')
         self.entry1.grid(row=1)
         self.napis2=TK.Label(text="słowo2",font=self.czcionka_small)
         self.napis2.grid(row=2)
 
-        self.entry2=TK.Entry(width=70,font=self.czcionka_big,textvariable=self.entry2_tresc)
-        self.entry2.config(state=TK.DISABLED,disabledbackground='green')
-        self.entry2.config(disabledforeground='black')
-
-
+        self.entry2=TK.Entry(width=70,font=self.czcionka_big,textvariable=self.entry2_tresc,
+                    state=TK.DISABLED,disabledbackground='green',disabledforeground='black')
         self.entry2.grid(row=3)
+
         self.pasekstanu=KPS.Pasekstanu(self.okno,self.czcionka_small)
         self.pasekstanu.grid(row=4,sticky='SWE')
         self.sajzgrip=TTK.Sizegrip(self.okno)
@@ -137,7 +147,17 @@ class Okno:
         #print('tryb=',self.logika.biezacy_tryb)
         self.pasekstanu.ustaw(ktory=0,tresc="Tryb: "+self.logika.biezacy_tryb)
 
-        self.wlacz_minutnik()
+        if potencjalny_blad!='':
+            #jest komunikat_bledu więc niestartuj programu
+            self.entry1_tresc.set(potencjalny_blad)
+            self.entry1_tresc.set(potencjalny_blad)
+            print('---komunikat_bledu:',potencjalny_blad,'---')
+        else:
+            if self.alarm_po_ilu_sek>0:
+                self.wlacz_minutnik()
+            else:
+                #print('---minutnik wyłączony---')
+                self.pasekstanu.ustaw(ktory=2,tresc="---minutnik wyłączony---")
 
         #bindy:
         self.okno.bind("<space>",self.fun_spacja)
@@ -167,19 +187,23 @@ class Okno:
         '''
         tworzy okno i zeruje(ile_razy_wylos=0) wskazany rodzaj wpisów
         '''
-        def anulowanie(self,event=None):
+        def anulowanie(_):
             okienko.destroy()
 
         okienko=TK.Toplevel(self.okno,)
         okienko.title('Zerowanie ilości wylosowań')
         okienko.geometry('+350+300')
 
-        guzik1=TK.Button(okienko,text="Słówka: Zeruj Ilości Wylosowań",width=25,command=lambda:self.logika.zeruj_slowka())
-        guzik1.config(font=self.czcionka_small)
-        guzik2=TK.Button(okienko,text=" Ulica:  Zeruj Ilości Wylosowań",width=25,command=lambda:self.logika.zeruj_ulice())
-        guzik2.config(font=self.czcionka_small)
-        guzik3=TK.Button(okienko,text=" Zamknij (Escape)",width=25,command=lambda:anulowanie(event))
-        guzik3.config(font=self.czcionka_small)
+        guzik1=TK.Button(okienko,font=self.czcionka_small,width=25,
+                            text="Słówka: Zeruj Ilości Wylosowań",
+                            command=self.logika.zeruj_slowka())
+        guzik2=TK.Button(okienko,font=self.czcionka_small,width=25,
+                            text=" Ulica:  Zeruj Ilości Wylosowań",
+                            command=self.logika.zeruj_ulice())
+        guzik3=TK.Button(okienko,font=self.czcionka_small,
+                            text=" Zamknij (Escape)",width=25,
+                            command=lambda:anulowanie(event))
+
 
         okienko.bind("<KeyPress-Escape>",anulowanie)
 
@@ -188,11 +212,11 @@ class Okno:
         guzik3.grid()
 
 
-    def pokaz_sytuacje(self,event):
+    def pokaz_sytuacje(self,_):
         "tylko do celów kontrolnych"
         print('logika')
-        print('   ',self.logika.lista_slowek)
         print('   ',self.logika.lista_ulic)
+        print('   ',self.logika.lista_slowek)
         print('   ',self.logika.biezacy_tryb)
         print('   ',self.logika.lista_zadan)
         print('   ',self.logika.biezacy_wpis)
@@ -218,11 +242,9 @@ class Okno:
             while True:
                 if self.watki_zakoncz:
                     return
-                #self.pasek.ustaw(ktory=2,tresc='Zacząłem '+str(odliczone)+' sekund temu')
                 self.pasekstanu.ustaw(ktory=2,tresc='Zacząłem '+konwertuj(odliczone))
                 if self.alarm_po_ilu_sek==odliczone:
                     self.pasekstanu.ustaw(ktory=1,tresc='--KONIEC JUŻ--',na_ile_sek=5)
-                    #self.alarmuj_dzwiekiem("clock-strike.wav")
                     self.alarmuj_dzwiekiem(self.plik_minutnika)
                 TI.sleep(0.25)
                 if self.watki_zakoncz:
@@ -236,17 +258,38 @@ class Okno:
                 TI.sleep(0.25)
                 odliczone+=1
 
-        watek=TH.Thread(target=czasomierz)
+        watek=TH.Thread(target=czasomierz,daemon=True)
         watek.start()
 
     def alarmuj_dzwiekiem(self,jaki_utwor):
-        "sugestia zmiany "
-        watek=TH.Thread(target=PS.playsound,args=(jaki_utwor,))
+        "daemon True powoduje wyłączenie dźwięku przy szybkim zamknięciu programu"
+        def wlacz_play():
+            "radzi sobie z wav i mp3 na debianie"
+            if jaki_utwor.endswith('.mp3'):
+                print('---plik_minutnika jest w formacie mp3---')
+                PG.mixer.init()
+                PG.mixer.music.load(jaki_utwor)
+                PG.mixer.music.play()
+            elif jaki_utwor.endswith('.wav'):
+                print('---plik_minutnika jest w formacie wav---')
+                PG.mixer.init()
+                play_obj=PG.mixer.Sound(jaki_utwor)
+                play_obj.play()
+            else:
+                print('---plik inny niż mp3 i wav---')
+
+        watek=TH.Thread(target=wlacz_play,daemon=True)
         watek.start()
 
     def fun_spacja(self,event=None):
-        ""
-        #print('fun_spacja',self.logika.biezacy_wpis)
+        "jak jest błąd fun_spacja niewykonuje się"
+        #print('fun_spacja',self.logika.biezacy_wpis,'_',self.logika.rodzaj_biezacego_wpisu,'_')
+        if self.logika.komunikat_bledu:
+            print('fun_spacja.blad:',self.logika.komunikat_bledu)
+            self.ustaw_pole_tekstowe(0,self.logika.komunikat_bledu)
+            self.ustaw_pole_tekstowe(1,self.logika.komunikat_bledu)
+            return
+
         #print('fun_spacja2',self.logika.rodzaj_biezacego_wpisu)
         if self.logika.rodzaj_biezacego_wpisu=='':
             self.logika.rodzaj_biezacego_wpisu=self.logika.wez_z_listy_zadan()
@@ -256,8 +299,10 @@ class Okno:
         elif self.logika.rodzaj_biezacego_wpisu=='u':
             self.logika.biezacy_wpis=self.logika.wylosuj_ulice_z_inkrem()
             if self.logika.biezacy_wpis is False:
-                self.ustaw_pole_tekstowe(0,"---brak słówek w trybie "+self.logika.biezacy_tryb+"---")
-                self.ustaw_pole_tekstowe(1,"---brak słówek w trybie "+self.logika.biezacy_tryb+"---")
+                self.ustaw_pole_tekstowe(0,"---brak słówek w trybie "+
+                                            self.logika.biezacy_tryb+"---")
+                self.ustaw_pole_tekstowe(1,"---brak słówek w trybie "+
+                                            self.logika.biezacy_tryb+"---")
                 self.logika.rodzaj_biezacego_wpisu=''
             else:
                 self.ustaw_pole_tekstowe(0,self.logika.biezacy_wpis.pierwszy)
@@ -267,8 +312,10 @@ class Okno:
         elif self.logika.rodzaj_biezacego_wpisu=='s1':
             self.logika.biezacy_wpis=self.logika.wylosuj_slowko_z_inkrem()
             if self.logika.biezacy_wpis is False:
-                self.ustaw_pole_tekstowe(0,"---brak słówek w trybie "+self.logika.biezacy_tryb+"---")
-                self.ustaw_pole_tekstowe(1,"---brak słówek w trybie "+self.logika.biezacy_tryb+"---")
+                self.ustaw_pole_tekstowe(0,"---brak słówek w trybie "+
+                                            self.logika.biezacy_tryb+"---")
+                self.ustaw_pole_tekstowe(1,"---brak słówek w trybie "+
+                                            self.logika.biezacy_tryb+"---")
                 self.logika.rodzaj_biezacego_wpisu=''
             else:
                 self.ustaw_pole_tekstowe(0,self.logika.biezacy_wpis.pierwszy)
@@ -329,15 +376,16 @@ class Okno:
         if self.logika.biezacy_wpis.tryb!=na_jaki:
             self.logika.ustaw_tryb_biezacego_wpisu(na_jaki)
             print('poprawiony tryb=',self.logika.biezacy_wpis)
-            self.pasekstanu.ustaw(ktory=1,tresc='zmieniłem tryb bieżacego wpisu na '+na_jaki,na_ile_sek=3)
+            self.pasekstanu.ustaw(ktory=1,tresc='zmieniłem tryb bieżacego wpisu na '+na_jaki,
+                                    na_ile_sek=3)
         else:
             self.pasekstanu.ustaw(ktory=1,tresc='już jest ten tryb',na_ile_sek=3)
 
-    def pokaz_pomoc(self,event):
+    def pokaz_pomoc(self,_):
         ""
         print('pokaz pomoc')
 
-    def edycja_ustawien(self,event):
+    def edycja_ustawien(self,_):
         ""
         print('edycja_ustawien')
 
@@ -347,7 +395,7 @@ class Okno:
 
 
     #4 metody zarządzające wpisami
-    def szukaj_wpisow_ok(self,event):
+    def szukaj_wpisow_ok(self,_):
         "do szukania tylko będzie"
         print('f.szukaj_wpisow_ok')
         '''
@@ -403,8 +451,10 @@ class Okno:
             wybor_slowko_ulica.set('slowka')
         print('wybor_slowko_ulica',wybor_slowko_ulica.get())
 
-        radio1=TK.Radiobutton(okienko,text='Słówka',variable=wybor_slowko_ulica,value='slowka',font=self.czcionka_small)
-        radio2=TK.Radiobutton(okienko,text='Ulica',variable=wybor_slowko_ulica,value='ulice',font=self.czcionka_small)
+        radio1=TK.Radiobutton(okienko,text='Słówka',variable=wybor_slowko_ulica,
+                                    value='slowka',font=self.czcionka_small)
+        radio2=TK.Radiobutton(okienko,text='Ulica',variable=wybor_slowko_ulica,
+                                    value='ulice',font=self.czcionka_small)
 
 
         napis1=TK.Label(okienko,text="Wpisz tutaj (przynajmniej 3 znaki):",font=self.czcionka_small)
@@ -435,28 +485,35 @@ class Okno:
         #guzik3.grid(row=12,column=1)
         '''
 
-    def dodaj_wpis_ok(self,event):
+    def dodaj_wpis_ok(self,_):
         "dodaj wpis"
         print('f.dodaj_wpis_ok')
+        if self.logika.komunikat_bledu!='':
+            print('---jest błąd:',self.logika.komunikat_bledu,'---')
+            return
 
-    def kasuj_wpis_ok(self,event):
+    def kasuj_wpis_ok(self,_):
         "kasuj wpis"
         print('f.kasuj_wpis_ok')
 
     def edytuj_wpis_ok(self,event):
         "edycja wpisu"
         print('f.edytuj_wpis_ok')
+        if self.logika.komunikat_bledu!='':
+            print('---jest błąd:',self.logika.komunikat_bledu,'---')
+            return
 
-        def zamknij_okienko_bez_zmian(event=None):
+        def zamknij_okienko_bez_zmian(_=None):
             "jak chcesz tylko zamknąć okno"
             #print('zamknij_okienko_bez_zmian')
             okienko.destroy()
 
-        def zamknij_okienko_zastosuj_zmiany(event=None):
+        def zamknij_okienko_zastosuj_zmiany(_=None):
             "zastosowanie i zamykanie okna"
             #print('zamknij_okienko_zastosuj_zmiany')
             #print('wpis_biezacy',self.logika.biezacy_wpis,type(self.logika.biezacy_wpis))
 
+            #użyłem type bo isinstance nie rozróżnia klas bazowych i pochodnych(to właśnie to jest)
             if type (self.logika.biezacy_wpis) is KL.KWU:
                 #print('stwierdzam ze ulica 1',wpis1.get(),'3',wpis3.get(),'4',wpis4.get())
                 if wpis1.get()!='' and wpis2.get()=='' and wpis3.get()!='' and wpis4.get()!='':
@@ -473,7 +530,8 @@ class Okno:
                 else:
                     print('---niemożna podmienić na puste---')
             else:
-                #print('stwierdzam ze słówko 1',wpis1.get(),'2',wpis2.get(),'3',wpis3.get(),'4',wpis4.get())
+                #print('stwierdzam ze słówko 1',wpis1.get(),'2',wpis2.get(),
+                #                    '3',wpis3.get(),'4',wpis4.get())
                 if wpis1.get()!='' and wpis2.get()!='' and wpis3.get()!='' and wpis4.get()!='':
                     nowszy=KL.KWS(wpis1.get(),wpis2.get(),wpis3.get(),int(wpis4.get()))
                     #print('Snowszy=',nowszy)
@@ -519,10 +577,11 @@ class Okno:
         #print('biezacy',self.logika.biezacy_wpis)
         starszy=self.logika.biezacy_wpis
 
-        guzik_cofaj=TK.Button(okienko,text='Rezygnuj ze zmian',command=lambda:zamknij_okienko_bez_zmian(event))
-        guzik_potwierdz=TK.Button(okienko,text='Zatwierdź(Escape)',command=lambda:zamknij_okienko_zastosuj_zmiany(event))
-        guzik_cofaj.config(font=self.czcionka_small)
-        guzik_potwierdz.config(font=self.czcionka_small)
+        guzik_cofaj=TK.Button(okienko,text='Rezygnuj ze zmian',font=self.czcionka_small,
+                                    command=lambda:zamknij_okienko_bez_zmian(event))
+        guzik_potwierdz=TK.Button(okienko,text='Zatwierdź(Escape)',font=self.czcionka_small,
+                                    command=lambda:zamknij_okienko_zastosuj_zmiany(event))
+
 
         if type(self.logika.biezacy_wpis) is KL.KWU:
             #print('stwierdzam ze ulica')
@@ -565,3 +624,10 @@ class Okno:
         guzik_cofaj.grid(row=8,column=0)
         guzik_potwierdz.grid(row=8,column=1)
         #koniec f.edytuj_wpis_ok
+
+if __name__=='__main__':
+    #bo można podać argument procent_slowek_reszta_ulic zakres 0-100
+    if len(sys.argv)>1:
+        App=Okno(int(sys.argv[1]))
+    else:
+        App=Okno()

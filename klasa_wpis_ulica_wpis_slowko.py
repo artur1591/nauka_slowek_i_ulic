@@ -168,7 +168,7 @@ def str_do_wpis_slowko(napis):
         musi mieć przynajmniej 2 spacje
         zawierać jeden z ' A ', ' B ', ' C '
     '''
-    print('str->WpisSlowko.napis',napis,'_')
+    #print('str->WpisSlowko.napis',napis,'_')
     if not isinstance(napis,str):
         raise TypeError('str->WpisSlowko.miał być str a jest',type(napis),napis,'_')
 
@@ -209,7 +209,7 @@ def str_do_wpis_slowko(napis):
         print('str->WpisSlowko.pierwszy/drugi pusty',pierwszy,'_',drugi,'_')
         return False
 
-    print('\nSpierwszy',pierwszy,'drugi',drugi,'tryb',tryb,'ile_x',ile_x)
+    #print('\nSpierwszy',pierwszy,'drugi',drugi,'tryb',tryb,'ile_x',ile_x)
     return WpisSlowko(pierwszy,drugi,tryb,int(ile_x))
 
 if __name__=='__main__':
