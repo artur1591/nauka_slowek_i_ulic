@@ -99,81 +99,87 @@ class TestKlasWpisObu(UT.TestCase):
         two=KW.WpisSlowko("rf","wa")
         self.assertLess(two,one)
 
-    def test_czy_str_jest_klasy_WpisUlica(self):
+    def test_czy_str_jest_klasy_wpis_ulica(self):
         "rozpoznawanie typu z str(WpisUlica)"
 
         zero=KW.WpisUlica("Kwiecista","B",14)
         ulica_na_str=str(zero)
-        wynik0=KW.WpisUlica.czy_str_jest_klasy_WpisUlica(ulica_na_str)
+        wynik0=KW.czy_str_jest_klasy_wpis_ulica(ulica_na_str)
         self.assertTrue(wynik0)
 
         two=KW.WpisUlica("Jasna")
         ulica_na_str=str(two)
-        wynik1=KW.WpisUlica.czy_str_jest_klasy_WpisUlica(ulica_na_str)
+        wynik1=KW.czy_str_jest_klasy_wpis_ulica(ulica_na_str)
         self.assertTrue(wynik1)
 
-        wynik2=KW.WpisUlica.czy_str_jest_klasy_WpisUlica("zmyślony 9")
+        wynik2=KW.czy_str_jest_klasy_wpis_ulica("zmyślony 9")
         self.assertFalse(wynik2)
 
         two=KW.WpisSlowko("jeden","one")
         slowko_na_str=str(two)
-        wynik3=KW.WpisUlica.czy_str_jest_klasy_WpisUlica(slowko_na_str)
+        wynik3=KW.czy_str_jest_klasy_wpis_ulica(slowko_na_str)
         self.assertFalse(wynik3)
 
-    def test_str_do_WpisUlica(self):
+        wynik4=KW.czy_str_jest_klasy_wpis_ulica('')
+        self.assertFalse(wynik4)
+
+    def test_str_do_wpis_ulica(self):
         "zamienia str-a na obiekt klasy WpisUlica"
 
         one=KW.WpisUlica("Zielona")
         jako_str=str(one)
-        wynik1=KW.WpisUlica.str_do_WpisUlica(jako_str)
+        wynik1=KW.str_do_wpis_ulica(jako_str)
         self.assertIsInstance(wynik1,KW.WpisUlica)
 
         two=KW.WpisSlowko("grey","szary")
         jako_str=str(two)
-        wynik2=KW.WpisUlica.str_do_WpisUlica(jako_str)
+        wynik2=KW.str_do_wpis_ulica(jako_str)
         self.assertFalse(wynik2)
 
-        wynik3=KW.WpisUlica.str_do_WpisUlica("ty to filozof jesteś")
+        wynik3=KW.str_do_wpis_ulica("ty to filozof jesteś")
         self.assertFalse(wynik3)
 
-    def test_czy_str_jest_klasy_WpisSlowko(self):
+    def test_czy_str_jest_klasy_wpis_slowko(self):
         "rozpoznawanie typu z str(WpisSlowko)"
 
         one=KW.WpisSlowko("jeden","one")
         slowko_na_str=str(one)
-        wynik1=KW.WpisSlowko.czy_str_jest_klasy_WpisSlowko(slowko_na_str)
+        wynik1=KW.czy_str_jest_klasy_wpis_slowko(slowko_na_str)
         self.assertTrue(wynik1)
 
         two=KW.WpisSlowko("dlugi_napis_jakis","long_text_in_english")
         slowko_na_str=str(two)
-        wynik2=KW.WpisSlowko.czy_str_jest_klasy_WpisSlowko(slowko_na_str)
+        wynik2=KW.czy_str_jest_klasy_wpis_slowko(slowko_na_str)
         self.assertTrue(wynik2)
 
         trzy=KW.WpisUlica("Czerwona")
         ulica_na_str=str(trzy)
-        wynik3=KW.WpisSlowko.czy_str_jest_klasy_WpisSlowko(ulica_na_str)
+        wynik3=KW.czy_str_jest_klasy_wpis_slowko(ulica_na_str)
         self.assertFalse(wynik3)
 
-        wynik4=KW.WpisSlowko.czy_str_jest_klasy_WpisSlowko("zmyslam123 C")
+        wynik4=KW.czy_str_jest_klasy_wpis_slowko("zmyslam123 C")
         self.assertFalse(wynik4)
 
-        wynik5=KW.WpisSlowko.czy_str_jest_klasy_WpisSlowko("past simple (zdanie)|podmiot 2f A 2")
+        wynik5=KW.czy_str_jest_klasy_wpis_slowko("past simple (zdanie)|podmiot 2f A 2")
         self.assertTrue(wynik5)
 
-    def test_str_do_WpisSlowko(self):
+        wynik6=KW.czy_str_jest_klasy_wpis_ulica('')
+        self.assertFalse(wynik6)
+
+    def test_str_do_wpis_slowko(self):
         "zamienia str-a na obiekt klasy WpisSlowko"
 
         one=KW.WpisSlowko("zielony","green")
         jako_str=str(one)
-        wynik1=KW.WpisSlowko.str_do_WpisSlowko(jako_str)
+        wynik1=KW.str_do_wpis_slowko(jako_str)
         self.assertIsInstance(wynik1,KW.WpisSlowko)
 
         two=KW.WpisUlica("Szara")
         jako_str=str(two)
-        wynik2=KW.WpisSlowko.str_do_WpisSlowko(jako_str)
+        wynik2=KW.str_do_wpis_slowko(jako_str)
         self.assertFalse(wynik2)
 
-        wynik3=KW.WpisSlowko.str_do_WpisSlowko("ty to filozof jesteś")
+        wynik3=KW.str_do_wpis_slowko("ty to filozof jesteś")
         self.assertFalse(wynik3)
 
 
