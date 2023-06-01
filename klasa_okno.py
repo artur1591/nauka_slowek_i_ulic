@@ -185,31 +185,43 @@ class Okno:
 
     def zerowanie_wpisow(self,event):
         '''
-        tworzy okno i zeruje(ile_razy_wylos=0) wskazany rodzaj wpisów
+        tworzy okno i zeruje wskazany rodzaj wpisów,tj:
+            albo ile_razy_wylos na 0
+            albo tryb na A
+                dla ulic i słówek oddzielnie
         '''
         def anulowanie(_):
             okienko.destroy()
 
         okienko=TK.Toplevel(self.okno,)
-        okienko.title('Zerowanie ilości wylosowań')
+        okienko.title('Ilość Wylosowań na Zero lub Tryb na A')
         okienko.geometry('+350+300')
 
         guzik1=TK.Button(okienko,font=self.czcionka_small,width=25,
-                            text="Słówka: Zeruj Ilości Wylosowań",
-                            command=self.logika.zeruj_slowka())
+                            text="Ulice:  Zeruj Ilości Wylosowań",
+                            command=self.logika.zeruj_ilosc_wylosowan_ulic)
         guzik2=TK.Button(okienko,font=self.czcionka_small,width=25,
-                            text=" Ulica:  Zeruj Ilości Wylosowań",
-                            command=self.logika.zeruj_ulice())
-        guzik3=TK.Button(okienko,font=self.czcionka_small,
-                            text=" Zamknij (Escape)",width=25,
-                            command=lambda:anulowanie(event))
+                            text="Słówka: Zeruj Ilości Wylosowań",
+                            command=self.logika.zeruj_ilosc_wylosowan_slowek)
 
+        guzik3=TK.Button(okienko,font=self.czcionka_small,width=25,
+                            text="Ulice: Zeruj do Trybu A",
+                            command=self.logika.zeruj_tryb_ulic)
+        guzik4=TK.Button(okienko,font=self.czcionka_small,width=25,
+                            text="Słówka: Zeruj do Trybu A",
+                            command=self.logika.zeruj_tryb_slowek)
+
+        guzikZ=TK.Button(okienko,font=self.czcionka_small,
+                            text=" Zamknij (Escape)",width=52,
+                            command=lambda:anulowanie(event))
 
         okienko.bind("<KeyPress-Escape>",anulowanie)
 
-        guzik1.grid()
-        guzik2.grid()
-        guzik3.grid()
+        guzik1.grid(row=0,column=0)
+        guzik2.grid(row=0,column=1)
+        guzik3.grid(row=1,column=0)
+        guzik4.grid(row=1,column=1)
+        guzikZ.grid(row=2,columnspan=2)
 
 
     def pokaz_sytuacje(self,_):

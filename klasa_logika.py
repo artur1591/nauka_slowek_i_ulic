@@ -55,12 +55,12 @@ class Logika:
         #main
         self.wczytaj_ulice()
         self.wczytaj_slowka()
-        if self.komunikat_bledu=='':
+        if not self.komunikat_bledu:
             self.ustaw_biezacy_tryb(self.biezacy_tryb)
 
     def zamknij(self):
         "taki __del__"
-        if self.komunikat_bledu=='':
+        if not self.komunikat_bledu:
             self.zapisz_ulice()
             self.zapisz_slowka()
             print('---czyste zamknięcie programu---')
@@ -354,9 +354,9 @@ class Logika:
 
         lista_najrzadszych=[]
 
-        for wpis in self.lista_ulic:
-            if wpis.ile_razy_wylos==najrzadsze and wpis.tryb==self.biezacy_tryb:
-                lista_najrzadszych.append(wpis)
+        for ulica in self.lista_ulic:
+            if ulica.ile_razy_wylos==najrzadsze and ulica.tryb==self.biezacy_tryb:
+                lista_najrzadszych.append(ulica)
 
         wylosowane=RA.choice(lista_najrzadszych)
         #print('wylosowane',wylosowane)
@@ -387,31 +387,41 @@ class Logika:
 
         lista_najrzadszych=[]
 
-        for wpis in self.lista_slowek:
-            if wpis.ile_razy_wylos==najrzadsze and wpis.tryb==self.biezacy_tryb:
-                #print('wpis',wpis)
-                lista_najrzadszych.append(wpis)
+        for slowko in self.lista_slowek:
+            if slowko.ile_razy_wylos==najrzadsze and slowko.tryb==self.biezacy_tryb:
+                #print('slowko',slowko)
+                lista_najrzadszych.append(slowko)
 
         wylosowane=RA.choice(lista_najrzadszych)
         #print('wylosowane',wylosowane)
 
         #inkrem:
-        for wpisy in self.lista_slowek:
-            if wpisy==wylosowane:
-                wpisy.ile_razy_wylos+=1
+        for slowko in self.lista_slowek:
+            if slowko==wylosowane:
+                slowko.ile_razy_wylos+=1
                 break
         #print('po',self.lista_slowek)
         return wylosowane
 
-    def zeruj_ulice(self):
-        "ulice z lista_ulic ile_razy_wylos=0"
+    def zeruj_ilosc_wylosowan_ulic(self):
+        "wszystkie ulice ustawia ile_razy_wylos=0"
         for wpis in self.lista_ulic:
             wpis.ile_razy_wylos=0
 
-    def zeruj_slowka(self):
-        "slowka z lista_slowek ile_razy_wylos=0"
+    def zeruj_tryb_ulic(self):
+        "wszystkie ulice ustawia tryb A"
+        for wpis in self.lista_ulic:
+            wpis.tryb='A'
+
+    def zeruj_ilosc_wylosowan_slowek(self):
+        "wszystkie slowka ustawia ile_razy_wylos=0"
         for wpis in self.lista_slowek:
             wpis.ile_razy_wylos=0
+
+    def zeruj_tryb_slowek(self):
+        "wszystkie ulice ustawia tryb A"
+        for wpis in self.lista_slowek:
+            wpis.tryb='A'
 
     def ustaw_biezacy_tryb(self,na_jaki):
         '''
@@ -471,9 +481,9 @@ class Logika:
         self.zmien_wpis(dotychczasowy,poprawiony)
 
     def cofnij_ilosc_wylos_biez_wpisu_lo(self):
-        "dla bieżącego wpisu dekrementuj ile_razy_wylos w self.lista_slowek/ulic"
+        "dla bieżącego wpisu dekrementuj ile_razy_wylos w self.lista_slowek/lista_ulic"
 
-        if isinstance(self.biezacy_wpis,KWS):
+        if type(self.biezacy_wpis) is KWS:
             ind_biez=self.lista_slowek.index(self.biezacy_wpis)
             #print('jaki_jestS',ind_biez)
             if self.lista_slowek[ind_biez].ile_razy_wylos>0:
@@ -504,6 +514,7 @@ class Logika:
             raise TypeError('czy_wpis_istnieje. typ=',type(jaki_wpis))
 
         if type(jaki_wpis) is KWU:
+            #ten warunek jest do ulicy tylko
             return jaki_wpis in self.lista_ulic
 
         return jaki_wpis in self.lista_slowek
@@ -518,7 +529,7 @@ class Logika:
             dopasowanie pierwszy/drugi nieudało się
         '''
         #print('szukany_str',szukany_str,len(szukany_str),typ)
-        if szukany_str=='':
+        if not szukany_str:
             raise ValueError('szukany_str powinien być niepusty')
         if not isinstance(szukany_str,str):
             raise TypeError('szukany powinien być str-em.jest',type(szukany_str))
@@ -555,14 +566,15 @@ class Logika:
         False jesli istnieje juz
         wykrywa typ i doklada czyli zwraca True jeśli dopis się udał
         '''
-        if not isinstance(nowy_wpis,KWS) and not isinstance(nowy_wpis,KWU):
+        if not isinstance(nowy_wpis,KWU):
+            #sprawdzenie obejmuje oba typy
             raise TypeError('dodać można Wpis a nie',type(nowy_wpis))
 
         czy_jest_taki=self.czy_wpis_istnieje(nowy_wpis)
         if czy_jest_taki:
             return False
 
-        if isinstance(nowy_wpis,KWS):
+        if type(nowy_wpis) is KWS:
             #jak WpisSlowko
             self.lista_slowek.append(nowy_wpis)
         else:

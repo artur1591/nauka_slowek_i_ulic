@@ -4,6 +4,8 @@ import random as RA
 import os as OS
 import copy as CO
 import numpy as NP
+import decimal as DE
+import fractions as FR
 import klasa_wpis_ulica_wpis_slowko as KW
 import klasa_logika as KL
 
@@ -59,19 +61,19 @@ class TestKlasaLogika(UT.TestCase):
         self.assertTrue(0<=self.logika.procent_slowek_reszta_ulic<=100)
 
     def sprawdz_typy_z_listy_ulic(self):
-        ""
+        "type jednak"
         self.assertNotEqual(len(self.logika.lista_ulic),0,msg="chyba że plik ulice pusty")
 
-        for slowko in self.logika.lista_ulic:
-            self.assertIsInstance(slowko,KW.WpisUlica)
+        for ulica in self.logika.lista_ulic:
+            self.assertTrue(type(ulica) is KW.WpisUlica)
         return True
 
     def sprawdz_typy_z_listy_slowek(self):
-        ""
+        "type jednak"
         self.assertNotEqual(len(self.logika.lista_slowek),0,msg="chyba że plik slowka pusty")
 
         for slowko in self.logika.lista_slowek:
-            self.assertIsInstance(slowko,KW.WpisSlowko)
+            self.assertTrue(type(slowko) is KW.WpisSlowko)
         return True
 
     def test_wczytaj_ulice_co_utworzyl(self):
@@ -211,7 +213,7 @@ class TestKlasaLogika(UT.TestCase):
     def test_zapisz_ulice(self):
         '''
         przed wywołaniem sprawdza:
-            czy lista_ulic niepusty
+            czy lista_ulic niepusty(w sprawdz_typy_z_listy_ulic)
             czy lista_ulic lista typu WpisUlica
         po wywołaniu sprawdza:
             czy plik_ulice niepusty
@@ -229,7 +231,7 @@ class TestKlasaLogika(UT.TestCase):
     def test_zapisz_slowka(self):
         '''
         przed wywołaniem sprawdza:
-            czy lista_slowek niepusta
+            czy lista_slowek niepusty(w sprawdz_typy_z_listy_ulic)
             czy lista_slowek jest listą typu WpisSlowko
         po wywołaniu sprawdza:
             czy plik_slowka niepusty
@@ -243,40 +245,79 @@ class TestKlasaLogika(UT.TestCase):
         rozmiar_pliku=OS.stat(jaki_plik).st_size
         self.assertNotEqual(rozmiar_pliku,0)
 
-    def test_zeruj_ulice(self):
-        "test zeruj_ulice"
+    def test_zeruj_tryb_ulic(self):
+        "test zeruj_tryb_ulic"
+        #zabezpiecz liste_ulic
+        zapasowa=CO.deepcopy(self.logika.lista_ulic)
+
+        #wykonaj funkcje
+        self.logika.zeruj_tryb_ulic()
+
+        #sprawdz czy sa tylko tryby A
+        for ulica in self.logika.lista_ulic:
+            self.assertTrue(ulica.tryb=='A')
+
+        #sprawdz czy zapasowa rozni się od biezacej
+        self.assertNotEqual(self.logika.lista_ulic,zapasowa)
+
+        #przywroc liste ulic po zerowaniu
+        self.logika.lista_ulic=zapasowa
+
+    def test_zeruj_ilosc_wylosowan_ulic(self):
+        "test zeruj_ilosc_wylosowan_ulic"
 
         #zabezpiecz liste_ulic
         zapasowa=CO.deepcopy(self.logika.lista_ulic)
 
         #wykonaj funkcje
-        self.logika.zeruj_ulice()
+        self.logika.zeruj_ilosc_wylosowan_ulic()
+
         #sprawdz czy wyzerowała
         for ulica in self.logika.lista_ulic:
             self.assertTrue(ulica.ile_razy_wylos==0)
+
         #sprawdz czy zapasowa rozni się od biezacej
         self.assertNotEqual(self.logika.lista_ulic,zapasowa)
 
         #przywroc liste ulic po zerowaniu
         self.logika.liste_ulic=zapasowa
 
-    def test_zeruj_slowka(self):
-        "test zeruj_slowka"
+    def test_zeruj_tryb_slowek(self):
+        "test zeruj_tryb_slowek"
+        #zabezpiecz liste_slowek
+        zapasowa=CO.deepcopy(self.logika.lista_slowek)
+
+        #wykonaj funkcje
+        self.logika.zeruj_tryb_slowek()
+
+        #sprawdz czy sa tylko tryby A
+        for ulica in self.logika.lista_slowek:
+            self.assertTrue(ulica.tryb=='A')
+
+        #sprawdz czy zapasowa rozni się od biezacej
+        self.assertNotEqual(self.logika.lista_ulic,zapasowa)
+
+        #przywroc liste ulic po zerowaniu
+        self.logika.lista_slowek=zapasowa
+
+    def test_zeruj_ilosc_wylosowan_slowek(self):
+        "test zeruj_ilosc_wylosowan_slowek"
 
         #zabezpiecz liste_slowek
         zapasowa=CO.deepcopy(self.logika.lista_slowek)
 
         #wykonaj funkcje
-        self.logika.zeruj_slowka()
+        self.logika.zeruj_ilosc_wylosowan_slowek()
+
         #sprawdz czy wyzerowała
         for slowko in self.logika.lista_slowek:
             self.assertTrue(slowko.ile_razy_wylos==0)
+
         #sprawdz czy zapasowa rozni się od biezacej
         self.assertNotEqual(self.logika.lista_slowek,zapasowa)
 
         #przywroc liste slowek po zerowaniu
         self.logika.liste_slowek=zapasowa
-
 
     def test_czy_sa_ulice_w_trybie(self):
         '''
@@ -382,7 +423,6 @@ class TestKlasaLogika(UT.TestCase):
             wynik=self.logika.wez_z_listy_zadan()
             self.assertTrue(wynik in ['u','s1'])
 
-
         #teraz 100% słówek
         self.logika.procent_slowek_reszta_ulic=100
         self.logika.zrob_liste_zadan()
@@ -390,7 +430,6 @@ class TestKlasaLogika(UT.TestCase):
         for _ in range(100):
             wynik=self.logika.wez_z_listy_zadan()
             self.assertEqual(wynik,'s1')
-
 
         #teraz 0% słówek czyli tylko ulice
         self.logika.procent_slowek_reszta_ulic=0
@@ -462,7 +501,7 @@ class TestKlasaLogika(UT.TestCase):
 
 
     def rozpoznaj_inkrementacje_ilosci_wylos_ulic(self,stara_lista,nowa_lista):
-        ""
+        "podfunkcja"
         for sta,now in zip(stara_lista,nowa_lista):
             if sta!=now:
                 self.assertEqual(sta.pierwszy,now.pierwszy)
@@ -473,7 +512,7 @@ class TestKlasaLogika(UT.TestCase):
         return True
 
     def rozpoznaj_inkrementacje_ilosci_wylos_slowek(self,stara_lista,nowa_lista):
-        ""
+        "podfunkcja"
         for sta,now in zip(stara_lista,nowa_lista):
             if sta!=now:
                 self.assertEqual(sta.pierwszy,now.pierwszy)
@@ -730,10 +769,6 @@ class TestKlasaLogika(UT.TestCase):
         else:
             self.assertEqual(mniejsze+1,wieksze)
 
-
-
-
-
     #najpierw samodzielne funkcje edytujace
     def test_czy_wpis_istnieje_slowko(self):
         ""
@@ -779,7 +814,7 @@ class TestKlasaLogika(UT.TestCase):
         #jedeny taki istniejacy
         wynik2=self.logika.szukaj_wpis(self.wpis_dokladnyS.drugi,typ='s')
         #print('wynik2',wynik2)
-        self.assertIsInstance(wynik2,KW.WpisSlowko)
+        self.assertTrue(type(wynik2) is KW.WpisSlowko)
 
         #szukanie puste wpisu
         with self.assertRaises(ValueError):
@@ -793,7 +828,7 @@ class TestKlasaLogika(UT.TestCase):
         #częściowy powinien się udać(dać klase Wpis)
         wynik5=self.logika.szukaj_wpis(self.wpis_czesciowyS.drugi,typ='s')
         #print('wynik5',wynik5)
-        self.assertIsInstance(wynik5,KW.WpisSlowko)
+        self.assertTrue(type(wynik5) is KW.WpisSlowko)
 
         #za krótki
         wynik6=self.logika.szukaj_wpis("dw",typ='s')
@@ -819,7 +854,7 @@ class TestKlasaLogika(UT.TestCase):
         #jedeny taki istniejacy
         wynik2=self.logika.szukaj_wpis(self.wpis_dokladnyU.pierwszy,typ='u')
         #print('wynik2',wynik2)
-        self.assertIsInstance(wynik2,KW.WpisUlica)
+        self.assertTrue(type(wynik2) is KW.WpisUlica)
 
         #szukanie puste wpisu
         with self.assertRaises(ValueError):
@@ -833,7 +868,7 @@ class TestKlasaLogika(UT.TestCase):
         #częściowy powinien się udać(dać klase Wpis)
         wynik5=self.logika.szukaj_wpis(self.wpis_czesciowyU_1_wyn.pierwszy,typ='u')
         #print('wynik5',wynik5)
-        self.assertIsInstance(wynik5,KW.WpisUlica)
+        self.assertTrue(type(wynik5) is KW.WpisUlica)
 
         #za krótki
         wynik6=self.logika.szukaj_wpis("dw",typ='u')
@@ -856,6 +891,8 @@ class TestKlasaLogika(UT.TestCase):
         #proba wstawienia str-a
         with self.assertRaises(TypeError):
             self.logika.dodaj_wpis("prowokacja")
+            self.logika.dodaj_wpis(FR.Fraction(4,7))
+            self.logika.dodaj_wpis(DE.Decimal('0.5'))
 
     def test_dodaj_wpis_ulica(self):
         ""
@@ -875,7 +912,6 @@ class TestKlasaLogika(UT.TestCase):
 
     def test_zmien_wpis_slowko(self):
         ""
-
         #podmieniam na nowy/nieistniejacy
         stary1=CO.deepcopy(self.logika.lista_slowek[1])
         #print('stary1',stary1)
