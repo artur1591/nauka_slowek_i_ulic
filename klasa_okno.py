@@ -408,27 +408,36 @@ class Okno:
 
     #4 metody zarządzające wpisami
     def szukaj_wpisow_ok(self,_):
-        "do szukania tylko będzie"
-        print('f.szukaj_wpisow_ok')
         '''
-        def anulowanie(event):
+        wykorzystuje metode szukaj_wpis klasy Logika
+        '''
+        #print('f.szukaj_wpisow_ok')
+        def zamknij_okienko(event):
+            "zamykanie Escape lub ręcznie"
             okienko.destroy()
+
+        def ustaw_szukanie_ulic():
+            #print('ulica do szukania')
+            wybor_ulica.set('ulice')
+            wybor_slowko.set('')
+            okienko.title('Szukanie Ulic')
+
+        def ustaw_szukanie_slowek():
+            #print('slowko do szukania')
+            wybor_ulica.set('')
+            wybor_slowko.set('slowka')
+            okienko.title('Szukanie Słówek')
+
         def szukanie(event):
-            print("szukanie")
-            print('wpisałeś',pole_szukania.get(),'=')
-            print('wybrane',wybor_slowko_ulica.get(),'_')
+            #print('wybrane',wybor_slowko.get(),wybor_ulica.get(),'_')
+            #print('wpisałeś',pole_szukania.get(),'=')
             wybrany_typ=None
 
-            if self.logika.procent_slowek_reszta_ulic==0:
+            if wybor_ulica.get()=='ulice' and wybor_slowko.get()=='':
                 wybrany_typ='u'
-            if self.logika.procent_slowek_reszta_ulic==100:
+            else:
                 wybrany_typ='s'
 
-            if wybor_slowko_ulica.get()=='slowka':
-                wybrany_typ='s'
-            if wybor_slowko_ulica.get()=='ulice':
-                wybrany_typ='u'
-            #print('wybrany_typ',wybrany_typ)
 
             if pole_szukania.get()=='' or len(pole_szukania.get())<3:
                 wyniki_szukania.delete(0,TK.END)
@@ -441,33 +450,37 @@ class Okno:
                     wyniki_szukania.insert(TK.END,'---nic się nie znalazło---')
                 else:
                     wyniki_szukania.delete(0,TK.END)
-                    print('co_znalazl',co_znalazl)
+                    #print('co_znalazl',co_znalazl)
                     if isinstance(co_znalazl,list):
                         #jak jest więcej niż 1 znalezionych
                         for ktory in enumerate(co_znalazl):
-                            print('ktory',ktory)
+                            #print('ktory',ktory)
                             #wyniki_szukania.insert(TK.END,'---'+str(co_znalazl[ktory])+'\n')
                             wyniki_szukania.insert(ktory[0]+1,'---'+str(ktory[1]))
                     else:
                         #jak tylko 1 jest
                         wyniki_szukania.insert(1,'---'+str(co_znalazl))
-        okienko=TK.Toplevel(self.okno,)
-        okienko.title('---ogólne przeznaczenie---')
+
+        okienko=TK.Toplevel(self.okno)
         okienko.geometry('+350+300')
-        okienko.bind('<KeyPress-Escape>',anulowanie)
+        okienko.bind('<KeyPress-Escape>',zamknij_okienko)
 
-        wybor_slowko_ulica=TK.StringVar(okienko)
+        wybor_ulica=TK.StringVar('')
+        wybor_slowko=TK.StringVar('')
+
+        radio1=TK.Radiobutton(okienko,text='Ulice',variable=wybor_ulica,
+                        command=ustaw_szukanie_ulic,value='ulice',font=self.czcionka_small)
+        radio2=TK.Radiobutton(okienko,text='Słówka',variable=wybor_slowko,
+                        command=ustaw_szukanie_slowek,value='slowka',font=self.czcionka_small)
+
         if self.logika.procent_slowek_reszta_ulic==0:
-            wybor_slowko_ulica.set('ulice')
+            wybor_slowko.set('')
+            wybor_ulica.set('ulice')
+            #print('szukanie ulic')
         else:
-            wybor_slowko_ulica.set('slowka')
-        print('wybor_slowko_ulica',wybor_slowko_ulica.get())
-
-        radio1=TK.Radiobutton(okienko,text='Słówka',variable=wybor_slowko_ulica,
-                                    value='slowka',font=self.czcionka_small)
-        radio2=TK.Radiobutton(okienko,text='Ulica',variable=wybor_slowko_ulica,
-                                    value='ulice',font=self.czcionka_small)
-
+            wybor_slowko.set('slowka')
+            wybor_ulica.set('')
+            #print('szukanie slowek')
 
         napis1=TK.Label(okienko,text="Wpisz tutaj (przynajmniej 3 znaki):",font=self.czcionka_small)
 
@@ -477,25 +490,19 @@ class Okno:
 
         wyniki_szukania=TK.Listbox(okienko,font=self.czcionka_small,width=50,height=17)
         #wyniki_szukania.bind("<<ListboxSelect>>",zaznaczony_wpis)
-        podpis1=TK.Label(okienko,text='Angielskie:',font=self.czcionka_small)
-        wpis1=TK.Entry(okienko,font=self.czcionka_small)
-        podpis2=TK.Label(okienko,text='Polskie:',font=self.czcionka_small)
-        wpis2=TK.Entry(okienko,font=self.czcionka_small)
-        podpis3=TK.Label(okienko,text='Tryb:',font=self.czcionka_small)
-        wpis3=TTK.Combobox(okienko,font=self.czcionka_small)
-        podpis4=TK.Label(okienko,text='ile_razy_wylosowany:',font=self.czcionka_small)
-        wpis4=TK.Entry(okienko,font=self.czcionka_small)
+
+        if type(self.logika.biezacy_wpis) is KL.KWU:
+            ustaw_szukanie_ulic()
+        else:
+            ustaw_szukanie_slowek()
 
         #grid-y okienka:
         radio1.grid(row=0,column=0)
         radio2.grid(row=0,column=1)
         napis1.grid(row=1,columnspan=2)
         pole_szukania.grid(row=2,columnspan=2)
-        #guzik1.grid(row=2,column=1)
         wyniki_szukania.grid(row=3,rowspan=9,columnspan=2)
-        #guzik2.grid(row=12,column=0)
-        #guzik3.grid(row=12,column=1)
-        '''
+        #koniec f.szukaj_wpisow_ok
 
     def dodaj_wpis_ok(self,_):
         '''
