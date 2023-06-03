@@ -498,11 +498,126 @@ class Okno:
         '''
 
     def dodaj_wpis_ok(self,_):
-        "dodaj wpis"
-        print('f.dodaj_wpis_ok')
+        '''
+        wykorzystuje metodę dodaj_wpis klasy Logika
+
+        rozumiem że jest błąd w Radiobutton. donosili o tym w necie
+        dlatego użyłem podwójnego StringVar(wybor_ulica i wybor_slowko)
+        '''
         if self.logika.komunikat_bledu!='':
             print('---jest błąd:',self.logika.komunikat_bledu,'---')
-            return
+            print('---ale można dodawać wpisy ---')
+
+        def ustaw_dodawanie_ulicy():
+            ""
+            wybor_ulica.set('ulica')
+            wybor_slowko.set('')
+            okienko.title('Dodawanie Ulicy')
+            podpis1.config(text='Ulica:')
+            wpis2.delete(0,TK.END)
+            podpis2.config(text='')
+            wpis2.config(state=TK.DISABLED)
+            guzik_potwierdz.config(text='Dodaj Nową Ulicę')
+
+        def ustaw_dodawanie_slowka():
+            ""
+            wybor_slowko.set('slowko')
+            wybor_ulica.set('')
+            okienko.title('Dodawanie Słówka')
+            podpis1.config(text='Angielski:')
+            podpis2.config(text='Polski:')
+            wpis2.config(state=TK.NORMAL)
+            guzik_potwierdz.config(text='Dodaj Nowe Słówko')
+
+        def zamknij_okienko(_=None):
+            "jak chcesz tylko zamknąć okno"
+            okienko.destroy()
+
+        def dodawanie_wpisu(_=None):
+            "zastosowanie i zamykanie okna"
+            if wybor_ulica.get()=='ulica' and wybor_slowko.get()=='':
+                if wpis1.get()=='':
+                    print('---nie można dodać pustej ulicy ---')
+                    return
+                #print('dodaje nową:',wpis1.get())
+                tmp=KL.KWU(wpis1.get())
+                zwrocil=self.logika.dodaj_wpis(tmp)
+                if zwrocil:
+                    wpis1.delete(0,TK.END)
+                    print('---dodałem nową ulicę---')
+                else:
+                    print('---nieudane dodanie nowej ulicy---')
+
+            elif wybor_slowko.get()=='slowko' and wybor_ulica.get()=='':
+                if wpis1.get()=='' or wpis2.get()=='':
+                    print('---jedno/drugie znaczenie nowego słowa puste---')
+                    return
+                #print('dodaje nowe:',wpis1.get(),wpis2.get())
+                tmp=KL.KWS(wpis1.get(),wpis2.get())
+                zwrocil=self.logika.dodaj_wpis(tmp)
+                if zwrocil:
+                    wpis1.delete(0,TK.END)
+                    wpis2.delete(0,TK.END)
+                    print('---dodałem nowe słówko---')
+                else:
+                    print('---nieudane dodanie nowego słówka---')
+
+        okienko=TK.Toplevel(self.okno)
+        okienko.geometry('+350+300')
+        okienko.bind("<KeyPress-Escape>",zamknij_okienko)
+
+        wybor_ulica=TK.StringVar('')
+        wybor_slowko=TK.StringVar('')
+
+        radio1=TK.Radiobutton(okienko,text='Ulica',value='ulica',command=ustaw_dodawanie_ulicy,
+                    font=self.czcionka_small,variable=wybor_ulica)
+        radio2=TK.Radiobutton(okienko,text='Słówko',value='slowko',command=ustaw_dodawanie_slowka,
+                    font=self.czcionka_small,variable=wybor_slowko)
+
+        if self.logika.procent_slowek_reszta_ulic==0:
+            wybor_ulica.set('ulica')
+            wybor_slowko.set('')
+        else:
+            wybor_ulica.set('')
+            wybor_slowko.set('slowko')
+
+        podpis1=TK.Label(okienko,font=self.czcionka_small)
+        wpis1=TK.Entry(okienko,font=self.czcionka_middle,width=30)
+        podpis2=TK.Label(okienko,font=self.czcionka_small)
+        wpis2=TK.Entry(okienko,font=self.czcionka_middle,width=30)
+
+        guzik_cofaj=TK.Button(okienko,text='Anuluj(Escape)',font=self.czcionka_small,
+                                    command=zamknij_okienko)
+        guzik_potwierdz=TK.Button(okienko,text='Dodaj Nowy Wpis',font=self.czcionka_small,
+                                    command=dodawanie_wpisu)
+
+
+        if type(self.logika.biezacy_wpis) is KL.KWU:
+            podpis1.config(text='Nazwa Ulicy:')
+            podpis2.config(text='')
+            wpis2.config(state=TK.DISABLED)
+        else:
+            podpis1.config(text='Angielski:')
+            podpis2.config(text='Polski:')
+            wpis2.config(state=TK.NORMAL)
+        wpis1.focus_set()
+
+        if type(self.logika.biezacy_wpis) is KL.KWU:
+            ustaw_dodawanie_ulicy()
+        else:
+            ustaw_dodawanie_slowka()
+
+        radio1.grid(row=0,column=0)
+        radio2.grid(row=0,column=1)
+
+        podpis1.grid(row=1,columnspan=2)
+        wpis1.grid(row=2,columnspan=2)
+        podpis2.grid(row=3,columnspan=2)
+        wpis2.grid(row=4,columnspan=2)
+        guzik_cofaj.grid(row=7,column=0)
+        guzik_potwierdz.grid(row=7,column=1)
+        #koniec f.dodaj_wpis_ok
+
 
     def kasuj_wpis_ok(self,_):
         "kasuj wpis"
