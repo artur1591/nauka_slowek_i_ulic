@@ -410,11 +410,33 @@ class Okno:
     def szukaj_wpisow_ok(self,_):
         '''
         wykorzystuje metode szukaj_wpis klasy Logika
+        realizuje również kasowanie metodą kasuj_wpis klasy Logika
         '''
         #print('f.szukaj_wpisow_ok')
         def zamknij_okienko(event):
             "zamykanie Escape lub ręcznie"
             okienko.destroy()
+
+        def kasowanie_wpisu_guzikiem():
+            print('f.kasowanie_wpisu_guzikiem')
+            ktory=wyniki_szukania.curselection()
+            #print(wyniki_szukania.get(ktory))
+            do_skasowania_str=wyniki_szukania.get(ktory)[3:]
+            print('do skasowania:',do_skasowania_str)
+            print('typ',wybor_ulica.get(),wybor_slowko.get())
+
+            if wybor_ulica.get()=='ulice' and wybor_slowko.get()=='':
+                do_skasowania_wpis=KL.KW.str_do_wpis_ulica(do_skasowania_str)
+                if do_skasowania_wpis:
+                    self.logika.kasuj_wpis(do_skasowania_wpis)
+                    guzik_kasuj.config(state=TK.DISABLED)
+                    wyniki_szukania.delete(0,TK.END)
+            else:
+                do_skasowania_wpis=KL.KW.str_do_wpis_slowko(do_skasowania_str)
+                if do_skasowania_wpis:
+                    self.logika.kasuj_wpis(do_skasowania_wpis)
+                    guzik_kasuj.config(state=TK.DISABLED)
+                    wyniki_szukania.delete(0,TK.END)
 
         def ustaw_szukanie_ulic():
             #print('ulica do szukania')
@@ -428,6 +450,14 @@ class Okno:
             wybor_slowko.set('slowka')
             okienko.title('Szukanie Słówek')
 
+        def zaznaczony_wpis(event):
+            print('zaznaczony_wpis')
+            ktory=wyniki_szukania.curselection()
+            #print(wyniki_szukania.get(ktory))
+            uzyskany_wpis=wyniki_szukania.get(ktory)[3:]
+            print('uzyskany_wpis',uzyskany_wpis)
+            guzik_kasuj.config(state=TK.NORMAL)
+
         def szukanie(event):
             #print('wybrane',wybor_slowko.get(),wybor_ulica.get(),'_')
             #print('wpisałeś',pole_szukania.get(),'=')
@@ -437,7 +467,6 @@ class Okno:
                 wybrany_typ='u'
             else:
                 wybrany_typ='s'
-
 
             if pole_szukania.get()=='' or len(pole_szukania.get())<3:
                 wyniki_szukania.delete(0,TK.END)
@@ -472,6 +501,8 @@ class Okno:
                         command=ustaw_szukanie_ulic,value='ulice',font=self.czcionka_small)
         radio2=TK.Radiobutton(okienko,text='Słówka',variable=wybor_slowko,
                         command=ustaw_szukanie_slowek,value='slowka',font=self.czcionka_small)
+        guzik_kasuj=TK.Button(okienko,text='Kasuj Wpis',state=TK.DISABLED,
+                        command=kasowanie_wpisu_guzikiem,font=self.czcionka_small)
 
         if self.logika.procent_slowek_reszta_ulic==0:
             wybor_slowko.set('')
@@ -489,7 +520,7 @@ class Okno:
         pole_szukania.focus_set()
 
         wyniki_szukania=TK.Listbox(okienko,font=self.czcionka_small,width=50,height=17)
-        #wyniki_szukania.bind("<<ListboxSelect>>",zaznaczony_wpis)
+        wyniki_szukania.bind("<<ListboxSelect>>",zaznaczony_wpis)
 
         if type(self.logika.biezacy_wpis) is KL.KWU:
             ustaw_szukanie_ulic()
@@ -499,9 +530,10 @@ class Okno:
         #grid-y okienka:
         radio1.grid(row=0,column=0)
         radio2.grid(row=0,column=1)
-        napis1.grid(row=1,columnspan=2)
-        pole_szukania.grid(row=2,columnspan=2)
-        wyniki_szukania.grid(row=3,rowspan=9,columnspan=2)
+        guzik_kasuj.grid(row=0,column=2,sticky='E')
+        napis1.grid(row=1,columnspan=3)
+        pole_szukania.grid(row=2,columnspan=3)
+        wyniki_szukania.grid(row=3,rowspan=9,columnspan=3)
         #koniec f.szukaj_wpisow_ok
 
     def dodaj_wpis_ok(self,_):
@@ -628,7 +660,7 @@ class Okno:
 
     def kasuj_wpis_ok(self,_):
         "kasuj wpis"
-        print('f.kasuj_wpis_ok')
+        print('f.kasuj_wpis_ok. kasowanie powinno być częścią szukania raczej')
 
     def edytuj_wpis_ok(self,event):
         "edycja wpisu"
