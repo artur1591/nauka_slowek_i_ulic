@@ -65,7 +65,7 @@ class Okno:
         #return ust.zwroc_ustawienia_programu()
         #ust_okn=[1920,600,70,23,16,'Arial',3,'kimwilde.mp3']
         #ust_okn=[1920,600,70,23,16,'Arial',120,'data-scaner.wav']
-        ust_okn=[1920,600,70,23,16,'Arial',0,'data-scaner.wav']
+        ust_okn=[1920,560,70,23,16,'Arial',120,'kimwilde.mp3']
         ust_log=['ulice.nauka','slowka.nauka','A',50]
         return [ust_okn,ust_log]
 
@@ -119,30 +119,35 @@ class Okno:
 
         self.okno.rowconfigure(0,weight=1)
         self.okno.rowconfigure(1,weight=1)
-        self.okno.rowconfigure(2,weight=1)
+        self.okno.rowconfigure(2,weight=2)
         self.okno.rowconfigure(3,weight=1)
+        self.okno.rowconfigure(4,weight=2)
         self.okno.columnconfigure(0,weight=1)
 
+        self.napis_ilosc_slowek_ulic=TK.Label(font=self.czcionka_small)
+        self.aktualizuj_napis_ilosc_wpisow()
+        self.napis_ilosc_slowek_ulic.grid(row=0,sticky='NE',ipady=0,ipadx=0,pady=0,padx=0)
+
         self.napis1=TK.Label(text="słowo1",font=self.czcionka_small)
-        self.napis1.grid(row=0)
+        self.napis1.grid(row=1,sticky='N',ipady=0,pady=0)
 
         self.entry1_tresc=TK.StringVar()
         self.entry2_tresc=TK.StringVar()
 
         self.entry1=TK.Entry(width=70,font=self.czcionka_big,textvariable=self.entry1_tresc,
                     state=TK.DISABLED,disabledbackground='green',disabledforeground='black')
-        self.entry1.grid(row=1)
+        self.entry1.grid(row=2)
         self.napis2=TK.Label(text="słowo2",font=self.czcionka_small)
-        self.napis2.grid(row=2)
+        self.napis2.grid(row=3)
 
         self.entry2=TK.Entry(width=70,font=self.czcionka_big,textvariable=self.entry2_tresc,
                     state=TK.DISABLED,disabledbackground='green',disabledforeground='black')
-        self.entry2.grid(row=3)
+        self.entry2.grid(row=4)
 
         self.pasekstanu=KPS.Pasekstanu(self.okno,self.czcionka_small)
-        self.pasekstanu.grid(row=4,sticky='SWE')
+        self.pasekstanu.grid(row=5,sticky='SWE')
         self.sajzgrip=TTK.Sizegrip(self.okno)
-        self.sajzgrip.grid(row=4,sticky='SE')
+        self.sajzgrip.grid(row=5,sticky='SE')
         self.pasekstanu.ustaw(ktory=1,tresc="Jestem",na_ile_sek=3)
         #print('tryb=',self.logika.biezacy_tryb)
         self.pasekstanu.ustaw(ktory=0,tresc="Tryb: "+self.logika.biezacy_tryb)
@@ -182,6 +187,16 @@ class Okno:
         self.okno.bind("<Control-KP_Add>",lambda event:self.czcionke_zmien('+'))
         self.okno.bind("<Control-KP_Subtract>",lambda event:self.czcionke_zmien('-'))
         self.okno.bind("<Control-KP_Multiply>",lambda event:self.czcionke_zmien('*'))
+
+    def aktualizuj_napis_ilosc_wpisow(self):
+        '''
+        w prawym górnym rogu pokazuje ile jest słówek i ile ulic.
+        aktualizowane po dodaj_wpis i kasuj_wpis
+        '''
+        self.napis_ilosc_slowek_ulic.config(
+                    text='ilość słówek: '+str(len(self.logika.lista_slowek))+
+                         '| ilość ulic: '+str(len(self.logika.lista_ulic)))
+
 
     def zerowanie_wpisow(self,event):
         '''
@@ -418,6 +433,7 @@ class Okno:
             okienko.destroy()
 
         def kasowanie_wpisu_guzikiem():
+            "po skasowaniu: aktualizuj_napis_ilosc_wpisow()"
             print('f.kasowanie_wpisu_guzikiem')
             ktory=wyniki_szukania.curselection()
             #print(wyniki_szukania.get(ktory))
@@ -431,12 +447,14 @@ class Okno:
                     self.logika.kasuj_wpis(do_skasowania_wpis)
                     guzik_kasuj.config(state=TK.DISABLED)
                     wyniki_szukania.delete(0,TK.END)
+                    self.aktualizuj_napis_ilosc_wpisow()
             else:
                 do_skasowania_wpis=KL.KW.str_do_wpis_slowko(do_skasowania_str)
                 if do_skasowania_wpis:
                     self.logika.kasuj_wpis(do_skasowania_wpis)
                     guzik_kasuj.config(state=TK.DISABLED)
                     wyniki_szukania.delete(0,TK.END)
+                    self.aktualizuj_napis_ilosc_wpisow()
 
         def ustaw_szukanie_ulic():
             #print('ulica do szukania')
@@ -542,6 +560,8 @@ class Okno:
 
         rozumiem że jest błąd w Radiobutton. donosili o tym w necie
         dlatego użyłem podwójnego StringVar(wybor_ulica i wybor_slowko)
+
+        po dodaniu wpisu: aktualizuj_napis_ilosc_wpisow()
         '''
         if self.logika.komunikat_bledu!='':
             print('---jest błąd:',self.logika.komunikat_bledu,'---')
@@ -584,6 +604,7 @@ class Okno:
                 if zwrocil:
                     wpis1.delete(0,TK.END)
                     print('---dodałem nową ulicę---')
+                    self.aktualizuj_napis_ilosc_wpisow()
                 else:
                     print('---nieudane dodanie nowej ulicy---')
 
@@ -598,6 +619,7 @@ class Okno:
                     wpis1.delete(0,TK.END)
                     wpis2.delete(0,TK.END)
                     print('---dodałem nowe słówko---')
+                    self.aktualizuj_napis_ilosc_wpisow()
                 else:
                     print('---nieudane dodanie nowego słówka---')
 
