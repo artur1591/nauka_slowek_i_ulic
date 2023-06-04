@@ -5,6 +5,7 @@ oddzielenie klasy Okno od klasy Logika
 import tkinter as TK
 import tkinter.ttk as TTK
 import tkinter.font as FO
+import tkinter.messagebox as TMS
 import os
 import sys
 import time as TI
@@ -49,12 +50,13 @@ class Okno:
 
     def zamknij(self,event=None):
         "..."
-        self.watki_zakoncz=True
-        if self.logika.komunikat_bledu=='':
-            self.zapisz_ustawienia_programu()
-        self.logika.zamknij()
-        self.pasekstanu.zamknij()
-        self.okno.destroy()
+        if TMS.askyesno(title="--uwaga--",message="Zamknąć?"):
+            self.watki_zakoncz=True
+            if self.logika.komunikat_bledu=='':
+                self.zapisz_ustawienia_programu()
+            self.logika.zamknij()
+            self.pasekstanu.zamknij()
+            self.okno.quit()
 
     def wczytaj_ustawienia_programu(self):
         '''
@@ -167,6 +169,7 @@ class Okno:
         #bindy:
         self.okno.bind("<space>",self.fun_spacja)
         self.okno.bind("<KeyPress-Escape>",self.zamknij)
+        self.okno.protocol("WM_DELETE_WINDOW",self.zamknij)
         self.okno.bind("<KeyPress-F1>",self.pokaz_pomoc)
         self.okno.bind("<Control-Key-0>",self.cofnij_ilosc_wylos_biez_wpisu_ok)
 
