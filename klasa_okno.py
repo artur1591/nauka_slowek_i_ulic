@@ -6,15 +6,14 @@ import tkinter as TK
 import tkinter.ttk as TTK
 import tkinter.font as FO
 import tkinter.messagebox as TMS
-import os
-import sys
 import time as TI
-import threading as TH
+import os
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT']="hide"
+import sys
+import threading as TH
 import pygame as PG
-import klasa_logika as KL
-
 import klasa_pasek_stanu as KPS
+import klasa_logika as KL
 
 class Okno:
     "dlaczego ta klasa nie dziedziczy po jakieś tkinter? co mi to da?"
@@ -48,8 +47,8 @@ class Okno:
 
         self.okno.mainloop()
 
-    def zamknij(self,event=None):
-        "..."
+    def zamknij(self,_=None):
+        "pyta czy zamknąć i zamyka"
         if TMS.askyesno(title="--uwaga--",message="Zamknąć?"):
             self.watki_zakoncz=True
             if self.logika.komunikat_bledu=='':
@@ -66,8 +65,12 @@ class Okno:
         '''
         #return ust.zwroc_ustawienia_programu()
         #ust_okn=[1920,600,70,23,16,'Arial',3,'kimwilde.mp3']
-        #ust_okn=[1920,600,70,23,16,'Arial',120,'data-scaner.wav']
-        ust_okn=[1920,560,70,23,16,'Arial',120,'kimwilde.mp3']
+        #ust_okn=[1920,600,70,23,16,'Arial',0,'']
+        #ust_okn=[1920,600,70,23,16,'Arial',30,'kimwilde.mp3']
+        #ust_okn=[1920,600,70,23,16,'Arial',3,'data-scaner.wav']
+        #ust_okn=[1920,600,70,23,16,'Arial',3,'data-scaner.wav']
+        #ust_okn=[1920,560,70,23,16,'Arial',120,'kimwilde.mp3']
+        ust_okn=[1920,560,70,23,16,'Arial',3,'dwsample.ogg']
         ust_log=['ulice.nauka','slowka.nauka','A',50]
         return [ust_okn,ust_log]
 
@@ -93,6 +96,21 @@ class Okno:
 
         wynik=[ust_okn_lista,ust_log_lista]
         print(wynik)
+
+    def sprawdz_obecnosc_pliku_minutnika(self):
+        '''
+        jeśli brakuje:
+            return False
+
+        jeśli jest:
+            return True
+
+		sprytniej to zrobić. domknięciem?
+        '''
+        #print('f.sprawdz_obecnosc_pliku_minutnika:',self.plik_minutnika)
+        if os.path.exists(self.plik_minutnika):
+            return True
+        return False
 
     def wpisz_ustawienia_w_klase_okno(self,ust_okn):
         "ustawienia pobrane przez f.wczytaj_ustawienia_programu wpisuje w klase Okno"
@@ -160,11 +178,12 @@ class Okno:
             self.entry1_tresc.set(potencjalny_blad)
             print('---komunikat_bledu:',potencjalny_blad,'---')
         else:
-            if self.alarm_po_ilu_sek>0:
+            if self.alarm_po_ilu_sek>0 and self.sprawdz_obecnosc_pliku_minutnika():
                 self.wlacz_minutnik()
-            else:
-                #print('---minutnik wyłączony---')
+            elif self.plik_minutnika=='' or self.sprawdz_obecnosc_pliku_minutnika():
                 self.pasekstanu.ustaw(ktory=2,tresc="---minutnik wyłączony---")
+            else:
+                self.pasekstanu.ustaw(ktory=2,tresc="---brakuje pliku minutnika---")
 
         #bindy:
         self.okno.bind("<space>",self.fun_spacja)
@@ -176,7 +195,7 @@ class Okno:
         self.okno.bind("<Control-Key-s>",self.szukaj_wpisow_ok)
         self.okno.bind("<Control-Key-e>",self.edytuj_wpis_ok)
         self.okno.bind("<Control-Key-d>",self.dodaj_wpis_ok)
-        self.okno.bind("<Control-Key-k>",self.kasuj_wpis_ok)
+        #self.okno.bind("<Control-Key-k>",self.kasuj_wpis_ok)
 
         self.okno.bind("<Control-Key-a>",lambda event:self.ustaw_tryb_biezacego_wpisu('A'))
         self.okno.bind("<Control-Key-b>",lambda event:self.ustaw_tryb_biezacego_wpisu('B'))
@@ -229,7 +248,7 @@ class Okno:
                             text="Słówka: Zeruj do Trybu A",
                             command=self.logika.zeruj_tryb_slowek)
 
-        guzikZ=TK.Button(okienko,font=self.czcionka_small,
+        guzik_zamknij=TK.Button(okienko,font=self.czcionka_small,
                             text=" Zamknij (Escape)",width=52,
                             command=lambda:anulowanie(event))
 
@@ -239,7 +258,7 @@ class Okno:
         guzik2.grid(row=0,column=1)
         guzik3.grid(row=1,column=0)
         guzik4.grid(row=1,column=1)
-        guzikZ.grid(row=2,columnspan=2)
+        guzik_zamknij.grid(row=2,columnspan=2)
 
 
     def pokaz_sytuacje(self,_):
@@ -294,7 +313,7 @@ class Okno:
     def alarmuj_dzwiekiem(self,jaki_utwor):
         "daemon True powoduje wyłączenie dźwięku przy szybkim zamknięciu programu"
         def wlacz_play():
-            "radzi sobie z wav i mp3 na debianie"
+            "radzi sobie z wav,mp3,ogg na debianie"
             if jaki_utwor.endswith('.mp3'):
                 print('---plik_minutnika jest w formacie mp3---')
                 PG.mixer.init()
@@ -305,8 +324,13 @@ class Okno:
                 PG.mixer.init()
                 play_obj=PG.mixer.Sound(jaki_utwor)
                 play_obj.play()
+            elif jaki_utwor.endswith('.ogg'):
+                print('---plik_minutnika jest w formacie ogg---')
+                PG.mixer.init()
+                PG.mixer.music.load(jaki_utwor)
+                PG.mixer.music.play()
             else:
-                print('---plik inny niż mp3 i wav---')
+                print('---plik inny niż mp3, wav, ogg---')
 
         watek=TH.Thread(target=wlacz_play,daemon=True)
         watek.start()
@@ -393,7 +417,7 @@ class Okno:
         self.logika.cofnij_ilosc_wylos_biez_wpisu_lo()
         print('poprawiony',self.logika.biezacy_wpis)
 
-    def zmien_biezacy_tryb(self,event):
+    def zmien_biezacy_tryb(self,_):
         ""
         self.logika.zmien_biezacy_tryb()
         print("zmien_biezacy_tryb.nowy=",self.logika.biezacy_tryb)
@@ -431,7 +455,7 @@ class Okno:
         realizuje również kasowanie metodą kasuj_wpis klasy Logika
         '''
         #print('f.szukaj_wpisow_ok')
-        def zamknij_okienko(event):
+        def zamknij_okienko(_):
             "zamykanie Escape lub ręcznie"
             okienko.destroy()
 
@@ -471,7 +495,7 @@ class Okno:
             wybor_slowko.set('slowka')
             okienko.title('Szukanie Słówek')
 
-        def zaznaczony_wpis(event):
+        def zaznaczony_wpis(_):
             print('zaznaczony_wpis')
             ktory=wyniki_szukania.curselection()
             #print(wyniki_szukania.get(ktory))
@@ -479,7 +503,7 @@ class Okno:
             print('uzyskany_wpis',uzyskany_wpis)
             guzik_kasuj.config(state=TK.NORMAL)
 
-        def szukanie(event):
+        def szukanie(_):
             #print('wybrane',wybor_slowko.get(),wybor_ulica.get(),'_')
             #print('wpisałeś',pole_szukania.get(),'=')
             wybrany_typ=None
@@ -683,9 +707,9 @@ class Okno:
         #koniec f.dodaj_wpis_ok
 
 
-    def kasuj_wpis_ok(self,_):
-        "kasuj wpis"
-        print('f.kasuj_wpis_ok. kasowanie powinno być częścią szukania raczej')
+    #def kasuj_wpis_ok(self,_):
+    #    "kasuj wpis"
+    #    print('f.kasuj_wpis_ok. kasowanie powinno być częścią szukania raczej')
 
     def edytuj_wpis_ok(self,event):
         "edycja wpisu"
