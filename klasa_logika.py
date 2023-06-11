@@ -4,6 +4,7 @@ oddzielenie klasy Logika od klasy Okno
 import os as OS
 import datetime as DT
 import random as RA
+import klasa_stats as KS
 import klasa_wpis_ulica_wpis_slowko as KW
 from klasa_wpis_ulica_wpis_slowko import WpisUlica as KWU
 from klasa_wpis_ulica_wpis_slowko import WpisSlowko as KWS
@@ -45,6 +46,7 @@ class Logika:
         self.lista_slowek=None
         self.lista_ulic=None
         self.komunikat_bledu=''
+        self.stats=KS.Stats()
 
         self.biezacy_tryb=ust_log[2]
         self.procent_slowek_reszta_ulic=ust_log[3]
@@ -55,6 +57,7 @@ class Logika:
         #main
         self.wczytaj_ulice()
         self.wczytaj_slowka()
+        self.stats.wczytaj()
         if not self.komunikat_bledu:
             self.ustaw_biezacy_tryb(self.biezacy_tryb)
 
@@ -63,6 +66,7 @@ class Logika:
         if not self.komunikat_bledu:
             self.zapisz_ulice()
             self.zapisz_slowka()
+            self.stats.zapisz()
             print('---czyste zamknięcie programu---')
         else:
             print('niezapisuje ulic,słówek bo błąd:',self.komunikat_bledu)
@@ -344,6 +348,8 @@ class Logika:
         wylosuj takie jak biezacy_tryb
         jak lista pusta lub brak ulic z bieżacym trybem zwraca False.
         powienien zwrócić typ WpisUlica
+
+        inkrementacja ilości wylosowanych ulic
         '''
         if len(self.lista_slowek)==0:
             return False
@@ -366,6 +372,8 @@ class Logika:
             if wpisy==wylosowane:
                 wpisy.ile_razy_wylos+=1
                 break
+
+        self.stats.kolejna_ulica()
         #print('po',self.lista_ulic)
         return wylosowane
 
@@ -374,6 +382,8 @@ class Logika:
         wylosuj takie jak biezacy_tryb
         jak lista pusta lub brak słówek z bieżacym trybem zwraca False.
         powienien zwrócić typ WpisSlowko
+
+        inkrementacja ilości wylosowanych słówek
         '''
         if len(self.lista_slowek)==0:
             #print('lista slowek 0')
@@ -400,6 +410,8 @@ class Logika:
             if slowko==wylosowane:
                 slowko.ile_razy_wylos+=1
                 break
+
+        self.stats.kolejne_slowko()
         #print('po',self.lista_slowek)
         return wylosowane
 
