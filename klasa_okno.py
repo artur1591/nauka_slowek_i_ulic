@@ -2,37 +2,43 @@
 '''
 oddzielenie klasy Okno od klasy Logika
 '''
+import matplotlib.backends.backend_tkagg as MTLB
+import matplotlib.pyplot as PPL
+import klasa_logika as KL
+import os as OS
+import sys
+
+OS.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
+import pygame as PG
+
+import klasa_pasek_stanu as KPS
+
+import threading as TH
+import time as TI
 import tkinter as TK
-import tkinter.ttk as TTK
 import tkinter.font as FO
 import tkinter.messagebox as TMS
-import time as TI
-import os
-os.environ['PYGAME_HIDE_SUPPORT_PROMPT']="hide"
-import sys
-import threading as TH
-import pygame as PG
-import klasa_pasek_stanu as KPS
-import klasa_logika as KL
+import tkinter.ttk as TTK
+
+
 
 class Okno:
     "dlaczego ta klasa nie dziedziczy po jakieś tkinter? co mi to da?"
-    def __init__(self,procent_slowek=None):
+    def __init__(self, procent_slowek=None):
         ""
-        self.rozm_x=None
-        self.rozm_y=None
-        self.czcionka_big=None
-        self.czcionka_middle=None
-        self.czcionka_small=None
-        self.czcionka_family=None
-        self.alarm_po_ilu_sek=None
-        self.plik_minutnika=''
-        self.watki_zakoncz=False
-        self.pasekstanu=None
+        self.rozm_x = None
+        self.rozm_y = None
+        self.czcionka_big = None
+        self.czcionka_middle = None
+        self.czcionka_small = None
+        self.czcionka_family = None
+        self.alarm_po_ilu_sek = None
+        self.plik_minutnika = ''
+        self.watki_zakoncz = False
+        self.pasekstanu = None
 
         #main
-        print('sprawdzić czy pokazuje tylko najrzadziej losowane')
-        print('import Pmw sprawdzić widżety')
+        self.komunikaty_poczatkowe()
         ust_okn,ust_log=self.wczytaj_ustawienia_programu()
         self.okno=TK.Tk()
         self.wpisz_ustawienia_w_klase_okno(ust_okn)
@@ -47,6 +53,12 @@ class Okno:
 
         self.okno.mainloop()
 
+    @staticmethod
+    def komunikaty_poczatkowe():
+        "czasem coś chce się powiedzieć na początku programu"
+        print('---Aby zobaczyć listę skrótów klawiszowych naciśnij F1---')
+        #print('import Pmw sprawdzić widżety')
+
     def zamknij(self,_=None):
         "pyta czy zamknąć i zamyka"
         if TMS.askyesno(title="--uwaga--",message="Zamknąć?"):
@@ -57,7 +69,8 @@ class Okno:
             self.pasekstanu.zamknij()
             self.okno.quit()
 
-    def wczytaj_ustawienia_programu(self):
+    @staticmethod
+    def wczytaj_ustawienia_programu():
         '''
         z pliku ustawienia.xml
 
@@ -70,7 +83,7 @@ class Okno:
         #ust_okn=[1920,600,70,23,16,'Arial',3,'data-scaner.wav']
         #ust_okn=[1920,600,70,23,16,'Arial',3,'data-scaner.wav']
         #ust_okn=[1920,560,70,23,16,'Arial',120,'kimwilde.mp3']
-        ust_okn=[1920,560,70,23,16,'Arial',3,'dwsample.ogg']
+        ust_okn=[1920,560,70,23,16,'Arial',0,'dwsample.ogg']
         ust_log=['ulice.nauka','slowka.nauka','A',50]
         return [ust_okn,ust_log]
 
@@ -105,10 +118,10 @@ class Okno:
         jeśli jest:
             return True
 
-		sprytniej to zrobić. domknięciem?
+        sprytniej to zrobić. domknięciem?
         '''
         #print('f.sprawdz_obecnosc_pliku_minutnika:',self.plik_minutnika)
-        if os.path.exists(self.plik_minutnika):
+        if KL.OS.path.exists(self.plik_minutnika):
             return True
         return False
 
@@ -202,6 +215,7 @@ class Okno:
         self.okno.bind("<Control-Key-c>",lambda event:self.ustaw_tryb_biezacego_wpisu('C'))
         self.okno.bind("<Control-Key-t>",self.zmien_biezacy_tryb)
         self.okno.bind("<Control-Key-u>",self.edycja_ustawien)
+        self.okno.bind("<Control-Key-r>",self.pokaz_wykres_statystyk)
         #też Escape
         self.okno.bind("<Control-Key-q>",self.zamknij)
         self.okno.bind("<Control-Key-z>",self.zerowanie_wpisow)
@@ -209,6 +223,58 @@ class Okno:
         self.okno.bind("<Control-KP_Add>",lambda event:self.czcionke_zmien('+'))
         self.okno.bind("<Control-KP_Subtract>",lambda event:self.czcionke_zmien('-'))
         self.okno.bind("<Control-KP_Multiply>",lambda event:self.czcionke_zmien('*'))
+
+    def pokaz_wykres_statystyk(self,_):
+        "w klasie Stat jest m.zwracająca dane do wykresu"
+        print('f.pokaz_wykres_statystyk. ')
+        def skalowanie(_):
+            pass
+            #print('skalowanie',okienko.winfo_width(),okienko.winfo_height())
+            #fig.set_figwidth(okienko.winfo_width())
+            #fig.set_figheight(okienko.winfo_height())
+        print('---skalowanie wykresu do okna dorobic---')
+        print('jakieś podsumowanie.np średnio dziennie=...')
+
+        okienko=TK.Toplevel(self.okno,bg='grey')
+        okienko.rowconfigure(0,weight=1)
+        okienko.columnconfigure(0,weight=1)
+        okienko.bind("<KeyPress-Escape>",lambda event:okienko.destroy())
+        okienko.bind("<Configure>",skalowanie)
+        okienko.geometry('+350+300')
+        okienko.wm_iconphoto(False,TK.PhotoImage(file='logo.png'))
+
+        PPL.autoscale(tight=True)
+        PPL.figure(edgecolor='red')
+
+        fig,osie=PPL.subplots()
+        fig.patch.set_facecolor('seagreen')
+        plotno=MTLB.FigureCanvasTkAgg(fig,master=okienko)
+        plotno.get_tk_widget().grid(row=0,columnspan=2)
+
+        toolbar=MTLB.NavigationToolbar2Tk(plotno,okienko,pack_toolbar=False)
+        toolbar.update()
+        toolbar.grid(row=1,column=0)
+
+        guzik=TK.Button(okienko,text="Zamknij (lub klawisz Escape)",command=okienko.destroy)
+        guzik.grid(row=1,column=1)
+
+        daty_wej=list()
+        ilosci_wej_u=list()
+        ilosci_wej_s=list()
+        for trojca in self.logika.stats.biezace_statystyki_trojca:
+            daty_wej.append(trojca[0])
+            ilosci_wej_u.append(trojca[1])
+            ilosci_wej_s.append(trojca[2])
+
+        osie.plot(daty_wej,ilosci_wej_u,'-',marker='D',color='black',lw=3)
+        osie.plot(daty_wej,ilosci_wej_s,'-',marker='H',color='green',lw=3)
+        osie.set_xlabel('Daty')
+        osie.set_ylabel('Ilości dzienne')
+        osie.legend(['Ulice','Słówka'])
+        osie.set_facecolor('grey')
+        #print('margin',osie.margins())
+        plotno.draw()
+
 
     def aktualizuj_napis_ilosc_wpisow(self):
         '''
@@ -310,7 +376,8 @@ class Okno:
         watek=TH.Thread(target=czasomierz,daemon=True)
         watek.start()
 
-    def alarmuj_dzwiekiem(self,jaki_utwor):
+    @staticmethod
+    def alarmuj_dzwiekiem(jaki_utwor):
         "daemon True powoduje wyłączenie dźwięku przy szybkim zamknięciu programu"
         def wlacz_play():
             "radzi sobie z wav,mp3,ogg na debianie"
@@ -335,7 +402,7 @@ class Okno:
         watek=TH.Thread(target=wlacz_play,daemon=True)
         watek.start()
 
-    def fun_spacja(self,event=None):
+    def fun_spacja(self,_=None):
         "jak jest błąd fun_spacja niewykonuje się"
         #print('fun_spacja',self.logika.biezacy_wpis,'_',self.logika.rodzaj_biezacego_wpisu,'_')
         if self.logika.komunikat_bledu:
@@ -410,15 +477,15 @@ class Okno:
             #self.entry2.delete(0,TK.END)
             self.entry2_tresc.set('')
 
-    def cofnij_ilosc_wylos_biez_wpisu_ok(self,event):
-        ""
+    def cofnij_ilosc_wylos_biez_wpisu_ok(self,_):
+        "czasem można chcieć powtórzyć dany wpis w najbliższym obiegu losowania"
         print('cofnij_ilosc_wylos_biez_wpisu_Ok')
         print('biezacy',self.logika.biezacy_wpis)
         self.logika.cofnij_ilosc_wylos_biez_wpisu_lo()
         print('poprawiony',self.logika.biezacy_wpis)
 
     def zmien_biezacy_tryb(self,_):
-        ""
+        "przechodzi po kolej: A->B->C i powtarza"
         self.logika.zmien_biezacy_tryb()
         print("zmien_biezacy_tryb.nowy=",self.logika.biezacy_tryb)
         self.pasekstanu.ustaw(ktory=0,tresc="Tryb: "+self.logika.biezacy_tryb)
@@ -436,14 +503,29 @@ class Okno:
             self.pasekstanu.ustaw(ktory=1,tresc='już jest ten tryb',na_ile_sek=3)
 
     def pokaz_pomoc(self,_):
-        ""
-        print('pokaz pomoc')
+        "taki szybki help"
+        print('''-Skróty klawiszowe:
+            spacja - następne słówko
+            ctrl+q/Escape - wyjście z potwierdzeniem
+            ctrl+z zerowanie ilości wylosowań/trybów dla słówek/ulic
+            CRUD:
+                ctrl+s szukanie wpisów
+                ctrl+d dodawanie nowych wpisów
+                ctrl+e edycja bieżącego wpisu
+                ctrl+a/b/c ustaw tryb bieżącego wpisu
+            ctrl+0 - cofnij ilość wylosowań bieżącego wpisu
+            ctrl+t zmień bieżący tryb
+            ctrl+r pokaż statystyki
+            ctrl+*/+/- zerowanie/powiększanie/zmniejszanie rozmiaru czcionki
+            F1 - pokaż tą pomoc
+        ''')
 
     def edycja_ustawien(self,_):
-        ""
+        "jak dopieszę więcej funkcji to zrobie wtedy ustawienia jakieś"
         print('edycja_ustawien')
 
-    def czcionke_zmien(self,jaka_operacja):
+    @staticmethod
+    def czcionke_zmien(jaka_operacja):
         "operacje to +  -   *"
         print('czcionke_zmien.operacja',jaka_operacja)
 
