@@ -15,12 +15,12 @@ class Stats:
 
     def kolejna_ulica(self):
         "inkrementacja dziennej ilości wylosowanych ulic"
-        print('Stats.kolejna_ulica')
+        #print('Stats.kolejna_ulica')
         self.biezace_statystyki_trojca[-1][1]+=1
 
     def kolejne_slowko(self):
         "inkrementacja dziennej ilości wylosowanych słówek"
-        print('Stats.kolejne_slowko')
+        #print('Stats.kolejne_slowko')
         self.biezace_statystyki_trojca[-1][2]+=1
 
     @staticmethod
@@ -78,7 +78,7 @@ class Stats:
             self.biezace_statystyki_trojca.append([data,ile_u,ile_s])
 
         #trojca mozna zwrocic i zbudowac z wykres jakis ładny
-        print('biezace_statystyki_trojca',self.biezace_statystyki_trojca)
+        #print('biezace_statystyki_trojca',self.biezace_statystyki_trojca)
 
         #print('ostatnia_linia',self.wczytana_ostatnia_linia)
         data_z_ost_linii=self.biezace_statystyki_trojca[-1][0]
@@ -100,14 +100,14 @@ class Stats:
         '''
         zapisuje cały plik narazie
         '''
-        print('f.zapisz: trojca',self.biezace_statystyki_trojca)
+        #print('f.zapisz: trojca',self.biezace_statystyki_trojca)
         if len(self.biezace_statystyki_trojca)==0:
             print('---przerywam zapis do biezace_statystyki_trojca PUSTY---')
             return
         with open(self.jaki_plik,'w') as plik:
             for kolejna_trojca in self.biezace_statystyki_trojca:
-                print('kolejna_trojca',kolejna_trojca)
+                #print('kolejna_trojca',kolejna_trojca)
                 linia=self._zrob_linie_(kiedy=kolejna_trojca[0],
                                 ile_u=kolejna_trojca[1],ile_s=kolejna_trojca[2])
-                print('linia do zapisu',linia,'_')
+                #print('linia do zapisu',linia,'_')
                 plik.write(linia)

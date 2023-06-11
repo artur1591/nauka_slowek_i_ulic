@@ -2,25 +2,21 @@
 '''
 oddzielenie klasy Okno od klasy Logika
 '''
-import matplotlib.backends.backend_tkagg as MTLB
-import matplotlib.pyplot as PPL
-import klasa_logika as KL
-import os as OS
 import sys
-
-OS.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
-import pygame as PG
-
-import klasa_pasek_stanu as KPS
-
+import os as OS
 import threading as TH
 import time as TI
+import random as RA
 import tkinter as TK
 import tkinter.font as FO
 import tkinter.messagebox as TMS
 import tkinter.ttk as TTK
-
-
+import matplotlib.backends.backend_tkagg as MTLB
+import matplotlib.pyplot as PPL
+OS.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
+import pygame as PG
+import klasa_pasek_stanu as KPS
+import klasa_logika as KL
 
 class Okno:
     "dlaczego ta klasa nie dziedziczy po jakieś tkinter? co mi to da?"
@@ -36,6 +32,8 @@ class Okno:
         self.plik_minutnika = ''
         self.watki_zakoncz = False
         self.pasekstanu = None
+        self.losowa_kolejnosc_slowka=False
+        self.indeks_pierwszego=0
 
         #main
         self.komunikaty_poczatkowe()
@@ -59,6 +57,11 @@ class Okno:
         print('---Aby zobaczyć listę skrótów klawiszowych naciśnij F1---')
         #print('import Pmw sprawdzić widżety')
 
+    @staticmethod
+    def komunikaty_koncowe():
+        "czasem coś chce się powiedzieć na końcu programu"
+        #print('...koniec programu nauka_slowek_i_ulic')
+
     def zamknij(self,_=None):
         "pyta czy zamknąć i zamyka"
         if TMS.askyesno(title="--uwaga--",message="Zamknąć?"):
@@ -68,22 +71,27 @@ class Okno:
             self.logika.zamknij()
             self.pasekstanu.zamknij()
             self.okno.quit()
+            self.komunikaty_koncowe()
 
     @staticmethod
     def wczytaj_ustawienia_programu():
         '''
-        z pliku ustawienia.xml
+        będzie z pliku ustawienia.xml
 
         alarm_po_ilu_sek jeśli 0 to minutnik nie startuje
+        ostatni argument(9ty) ust_okn określa:
+            czy losować kolejność pierwszy/drugi słówek
+                (True- losuje, False pokazuje pierwszy najpierw)
         '''
         #return ust.zwroc_ustawienia_programu()
-        #ust_okn=[1920,600,70,23,16,'Arial',3,'kimwilde.mp3']
-        #ust_okn=[1920,600,70,23,16,'Arial',0,'']
-        #ust_okn=[1920,600,70,23,16,'Arial',30,'kimwilde.mp3']
-        #ust_okn=[1920,600,70,23,16,'Arial',3,'data-scaner.wav']
-        #ust_okn=[1920,600,70,23,16,'Arial',3,'data-scaner.wav']
-        #ust_okn=[1920,560,70,23,16,'Arial',120,'kimwilde.mp3']
-        ust_okn=[1920,560,70,23,16,'Arial',0,'dwsample.ogg']
+        #ust_okn=[1920,600,70,23,16,'Arial',3,'kimwilde.mp3',False]
+        #ust_okn=[1920,600,70,23,16,'Arial',0,'',False]
+        #ust_okn=[1920,600,70,23,16,'Arial',30,'kimwilde.mp3',True]
+        #ust_okn=[1920,600,70,23,16,'Arial',3,'data-scaner.wav',True]
+        #ust_okn=[1920,600,70,23,16,'Arial',3,'data-scaner.wav',True]
+        #ust_okn=[1920,560,70,23,16,'Arial',120,'kimwilde.mp3',False]
+        #ust_okn=[1920,560,70,23,16,'Arial',0,'dwsample.ogg',False]
+        ust_okn=[1920,560,70,23,16,'Arial',0,'dwsample.ogg',True]
         ust_log=['ulice.nauka','slowka.nauka','A',50]
         return [ust_okn,ust_log]
 
@@ -91,14 +99,17 @@ class Okno:
         "do pliku ustawienia.xml"
         roz_x=self.okno.winfo_width()
         roz_y=self.okno.winfo_height()
-        czc_fam=self.czcionka_big['family']
         czc_roz_b=self.czcionka_big['size']
         czc_roz_m=self.czcionka_middle['size']
         czc_roz_s=self.czcionka_small['size']
+        czc_fam=self.czcionka_big['family']
         ala_ile=self.alarm_po_ilu_sek
         ala_pli=self.plik_minutnika
+        los_kol=self.losowa_kolejnosc_slowka
 
-        ust_okn_lista=[roz_x,roz_y,czc_roz_b,czc_roz_m,czc_roz_s,czc_fam,ala_ile,ala_pli]
+        ust_okn_lista=[roz_x,roz_y,
+                    czc_roz_b,czc_roz_m,czc_roz_s,czc_fam,
+                    ala_ile,ala_pli,los_kol]
 
         plik_uli=self.logika.plik_ulice
         plik_slo=self.logika.plik_slowka
@@ -136,6 +147,7 @@ class Okno:
         self.czcionka_small=FO.Font(family=self.czcionka_family,size=ust_okn[4])
         self.alarm_po_ilu_sek=ust_okn[6]
         self.plik_minutnika=ust_okn[7]
+        self.losowa_kolejnosc_slowka =ust_okn[8]
 
     def zbuduj_okno(self,potencjalny_blad):
         '''
@@ -285,7 +297,6 @@ class Okno:
                     text='ilość słówek: '+str(len(self.logika.lista_slowek))+
                          '| ilość ulic: '+str(len(self.logika.lista_ulic)))
 
-
     def zerowanie_wpisow(self,event):
         '''
         tworzy okno i zeruje wskazany rodzaj wpisów,tj:
@@ -325,19 +336,6 @@ class Okno:
         guzik3.grid(row=1,column=0)
         guzik4.grid(row=1,column=1)
         guzik_zamknij.grid(row=2,columnspan=2)
-
-
-    def pokaz_sytuacje(self,_):
-        "tylko do celów kontrolnych"
-        print('logika')
-        print('   ',self.logika.lista_ulic)
-        print('   ',self.logika.lista_slowek)
-        print('   ',self.logika.biezacy_tryb)
-        print('   ',self.logika.lista_zadan)
-        print('   ',self.logika.biezacy_wpis)
-        print('   ',self.logika.rodzaj_biezacego_wpisu)
-        print('   ',self.logika.procent_slowek_reszta_ulic,'%')
-
 
     def wlacz_minutnik(self):
         '''
@@ -403,8 +401,18 @@ class Okno:
         watek.start()
 
     def fun_spacja(self,_=None):
-        "jak jest błąd fun_spacja niewykonuje się"
-        #print('fun_spacja',self.logika.biezacy_wpis,'_',self.logika.rodzaj_biezacego_wpisu,'_')
+        '''
+        jak jest błąd fun_spacja niewykonuje się
+
+        jeśli self.losowa_kolejnosc_slowka włączona:
+            self.indeks_pierwszego=0 mówi żeby Wpis.pierwszy był pokazany w gornym oknie
+                jeśli =1 Wpis.drugi idzie w górne okno
+
+        self.logika.rodzaj_biezacego_wpisu przyjmuje wartości:  '' 'u' 's1' 's2' False
+
+        '''
+        print('fun_spacja',self.logika.biezacy_wpis,'_',self.logika.rodzaj_biezacego_wpisu,'_')
+
         if self.logika.komunikat_bledu:
             print('fun_spacja.blad:',self.logika.komunikat_bledu)
             self.ustaw_pole_tekstowe(0,self.logika.komunikat_bledu)
@@ -431,6 +439,13 @@ class Okno:
                 self.logika.rodzaj_biezacego_wpisu=''
 
         elif self.logika.rodzaj_biezacego_wpisu=='s1':
+            if self.losowa_kolejnosc_slowka:
+                print('losuje indeks_pierwszego')
+                self.indeks_pierwszego=RA.randint(0,1)
+                #print('s1.los_kol_slo',self.losowa_kolejnosc_slowka,
+				#	'indeks_pierwszego',self.indeks_pierwszego)
+                print('s1.indeks_pierwszego',self.indeks_pierwszego)
+
             self.logika.biezacy_wpis=self.logika.wylosuj_slowko_z_inkrem()
             if self.logika.biezacy_wpis is False:
                 self.ustaw_pole_tekstowe(0,"---brak słówek w trybie "+
@@ -439,16 +454,22 @@ class Okno:
                                             self.logika.biezacy_tryb+"---")
                 self.logika.rodzaj_biezacego_wpisu=''
             else:
-                self.ustaw_pole_tekstowe(0,self.logika.biezacy_wpis.pierwszy)
+                #tutaj ustawic ktory pierwszy
+                if self.indeks_pierwszego==0:
+                    self.ustaw_pole_tekstowe(0,self.logika.biezacy_wpis.pierwszy)
+                else:
+                    self.ustaw_pole_tekstowe(0,self.logika.biezacy_wpis.drugi)
                 self.czysc_pole_tekstowe(1)
                 self.logika.rodzaj_biezacego_wpisu='s2'
 
         elif self.logika.rodzaj_biezacego_wpisu=='s2':
-            self.ustaw_pole_tekstowe(1,self.logika.biezacy_wpis.drugi)
+            print('s2.indeks_pierwszego=',self.indeks_pierwszego)
+            #tutaj ustawic ktory pierwszy
+            if self.indeks_pierwszego==0:
+                self.ustaw_pole_tekstowe(1,self.logika.biezacy_wpis.drugi)
+            else:
+                self.ustaw_pole_tekstowe(1,self.logika.biezacy_wpis.pierwszy)
             self.logika.rodzaj_biezacego_wpisu=''
-
-        else:
-            print('co się wydarzyło?')
 
     def ustaw_pole_tekstowe(self,ktory,tresc):
         "górne i dolne pole do wyświetlania słówek/tłumaczeń/ulic/..."

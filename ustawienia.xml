@@ -9,6 +9,7 @@
 		<czcionka_rodzina>Arial</czcionka_rodzina>
 		<alarm_po_ilu_sek>120</alarm_po_ilu_sek>
 		<plik_minutnika>clock-strike.wav</plik_minutnika>
+		<losowa_kolejnosc_slowka>False</losowa_kolejnosc_slowka>
 	</ustawienia_okna>
 
 	<ustawienia_logiki>
