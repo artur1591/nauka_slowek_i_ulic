@@ -415,7 +415,7 @@ class Okno:
         self.logika.rodzaj_biezacego_wpisu przyjmuje wartości:  '' 'u' 's1' 's2' False
 
         '''
-        print('fun_spacja',self.logika.biezacy_wpis,'_',self.logika.rodzaj_biezacego_wpisu,'_')
+        #print('fun_spacja',self.logika.biezacy_wpis,'_',self.logika.rodzaj_biezacego_wpisu,'_')
 
         if self.logika.komunikat_bledu:
             print('fun_spacja.blad:',self.logika.komunikat_bledu)
@@ -444,11 +444,11 @@ class Okno:
 
         elif self.logika.rodzaj_biezacego_wpisu=='s1':
             if self.losowa_kolejnosc_slowka:
-                print('losuje indeks_pierwszego')
+                #print('losuje indeks_pierwszego')
                 self.indeks_pierwszego=RA.randint(0,1)
                 #print('s1.los_kol_slo',self.losowa_kolejnosc_slowka,
                 #    'indeks_pierwszego',self.indeks_pierwszego)
-                print('s1.indeks_pierwszego',self.indeks_pierwszego)
+                #print('s1.indeks_pierwszego',self.indeks_pierwszego)
 
             self.logika.biezacy_wpis=self.logika.wylosuj_slowko_z_inkrem()
             if self.logika.biezacy_wpis is False:
@@ -467,7 +467,7 @@ class Okno:
                 self.logika.rodzaj_biezacego_wpisu='s2'
 
         elif self.logika.rodzaj_biezacego_wpisu=='s2':
-            print('s2.indeks_pierwszego=',self.indeks_pierwszego)
+            #print('s2.indeks_pierwszego=',self.indeks_pierwszego)
             #tutaj ustawic ktory pierwszy
             if self.indeks_pierwszego==0:
                 self.ustaw_pole_tekstowe(1,self.logika.biezacy_wpis.drugi)

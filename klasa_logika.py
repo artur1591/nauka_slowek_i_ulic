@@ -343,6 +343,14 @@ class Logika:
 
         return najrzadsze_slowko_int
 
+    def dopisz_wylosowane_do_kontroli(self,slowko_lub_ulica):
+        "wylosowane są dodawane do pliku wylosowane_wpisy żeby zobaczyć czy się nie powtarzają"
+        #print('f.dopisz_wylosowane_do_kontroli',slowko_lub_ulica)
+
+        kolejna_linia=str(slowko_lub_ulica)+'\n'
+        with open('wylosowane_wpisy','a') as plik:
+            plik.write(kolejna_linia)
+
     def wylosuj_ulice_z_inkrem(self):
         '''
         wylosuj takie jak biezacy_tryb
@@ -375,6 +383,7 @@ class Logika:
 
         self.stats.kolejna_ulica()
         #print('po',self.lista_ulic)
+        self.dopisz_wylosowane_do_kontroli(wylosowane)
         return wylosowane
 
     def wylosuj_slowko_z_inkrem(self):
@@ -413,6 +422,7 @@ class Logika:
 
         self.stats.kolejne_slowko()
         #print('po',self.lista_slowek)
+        self.dopisz_wylosowane_do_kontroli(wylosowane)
         return wylosowane
 
     def zeruj_ilosc_wylosowan_ulic(self):
