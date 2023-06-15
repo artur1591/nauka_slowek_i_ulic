@@ -3,6 +3,7 @@
 oddzielenie klasy Okno od klasy Logika
 '''
 import sys
+import enum as EN
 import os as OS
 import threading as TH
 import time as TI
@@ -32,6 +33,7 @@ class Okno:
         self.plik_minutnika = ''
         self.watki_zakoncz = False
         self.pasekstanu = None
+
         self.losowa_kolejnosc_slowka=False
         self.indeks_pierwszego=0
 
@@ -217,9 +219,9 @@ class Okno:
         self.okno.bind("<KeyPress-F1>",self.pokaz_pomoc)
         self.okno.bind("<Control-Key-0>",self.cofnij_ilosc_wylos_biez_wpisu_ok)
 
-        self.okno.bind("<Control-Key-s>",self.szukaj_wpisow_ok)
-        self.okno.bind("<Control-Key-e>",self.edytuj_wpis_ok)
-        self.okno.bind("<Control-Key-d>",self.dodaj_wpis_ok)
+        self.okno.bind("<KeyPress-F2>",self.szukaj_wpisow_okno)
+        self.okno.bind("<KeyPress-F3>",self.dodaj_wpis_okno)
+        self.okno.bind("<KeyPress-F4>",self.edytuj_wpis_okno)
         #self.okno.bind("<Control-Key-k>",self.kasuj_wpis_ok)
 
         self.okno.bind("<Control-Key-a>",lambda event:self.ustaw_tryb_biezacego_wpisu('A'))
@@ -227,7 +229,7 @@ class Okno:
         self.okno.bind("<Control-Key-c>",lambda event:self.ustaw_tryb_biezacego_wpisu('C'))
         self.okno.bind("<Control-Key-t>",self.zmien_biezacy_tryb)
         self.okno.bind("<Control-Key-u>",self.edycja_ustawien)
-        self.okno.bind("<Control-Key-r>",self.pokaz_wykres_statystyk)
+        self.okno.bind("<Control-Key-s>",self.pokaz_wykres_statystyk)
         #też Escape
         self.okno.bind("<Control-Key-q>",self.zamknij)
         self.okno.bind("<Control-Key-z>",self.zerowanie_wpisow)
@@ -253,7 +255,8 @@ class Okno:
         okienko.bind("<KeyPress-Escape>",lambda event:okienko.destroy())
         okienko.bind("<Configure>",skalowanie)
         okienko.geometry('+350+300')
-        okienko.wm_iconphoto(False,TK.PhotoImage(file='logo.png'))
+        okienko.wm_iconphoto(False,TK.PhotoImage(file='logo2.png'))
+        okienko.protocol("WM_DELETE_WINDOW",lambda event:okienko.destroy())
 
         PPL.autoscale(tight=True)
         PPL.figure(edgecolor='red')
@@ -330,6 +333,7 @@ class Okno:
                             command=lambda:anulowanie(event))
 
         okienko.bind("<KeyPress-Escape>",anulowanie)
+        okienko.wm_iconphoto(False,TK.PhotoImage(file='logo2.png'))
 
         guzik1.grid(row=0,column=0)
         guzik2.grid(row=0,column=1)
@@ -443,7 +447,7 @@ class Okno:
                 print('losuje indeks_pierwszego')
                 self.indeks_pierwszego=RA.randint(0,1)
                 #print('s1.los_kol_slo',self.losowa_kolejnosc_slowka,
-				#	'indeks_pierwszego',self.indeks_pierwszego)
+                #    'indeks_pierwszego',self.indeks_pierwszego)
                 print('s1.indeks_pierwszego',self.indeks_pierwszego)
 
             self.logika.biezacy_wpis=self.logika.wylosuj_slowko_z_inkrem()
@@ -526,13 +530,13 @@ class Okno:
     def pokaz_pomoc(self,_):
         "taki szybki help"
         print('''-Skróty klawiszowe:
-            spacja - następne słówko
+            spacja - następny wpis(lub znaczenie)
             ctrl+q/Escape - wyjście z potwierdzeniem
             ctrl+z zerowanie ilości wylosowań/trybów dla słówek/ulic
             CRUD:
-                ctrl+s szukanie wpisów
-                ctrl+d dodawanie nowych wpisów
-                ctrl+e edycja bieżącego wpisu
+                F2 szukanie wpisów
+                F3 dodawanie nowych wpisów
+                F4 edycja bieżącego wpisu
                 ctrl+a/b/c ustaw tryb bieżącego wpisu
             ctrl+0 - cofnij ilość wylosowań bieżącego wpisu
             ctrl+t zmień bieżący tryb
@@ -552,15 +556,41 @@ class Okno:
 
 
     #4 metody zarządzające wpisami
-    def szukaj_wpisow_ok(self,_):
+    def szukaj_wpisow_okno(self,_):
         '''
         wykorzystuje metode szukaj_wpis klasy Logika
         realizuje również kasowanie metodą kasuj_wpis klasy Logika
+        oraz edycja metodą zmien_wpis klasy Logika
+
         '''
-        #print('f.szukaj_wpisow_ok')
-        def zamknij_okienko(_):
+        print('f.szukaj_wpisow_okno. dodaj ilość wyszukanych')
+        def __czysc_wyniki_szukania__():
+            "po edycji potrzeba czyscic wyniki_szukania"
+            print('f. __czysc_wyniki_szukania__')
+            wyniki_szukania.delete(0,TK.END)
+
+        def __czysc_tytul__():
+            ""
+            print('__czysc_tytul__')
+
+
+        def zamknij_okienko(_=None):
             "zamykanie Escape lub ręcznie"
             okienko.destroy()
+
+        def edytowanie_wpisu_guzikiem():
+            ""
+            print('f.edytowanie_wpisu_guzikiem')
+            ktory=wyniki_szukania.curselection()
+            #print(wyniki_szukania.get(ktory))
+            do_edycji_str=wyniki_szukania.get(ktory)[3:]
+            print('do edycji:',do_edycji_str)
+            print('typ',wybor_ulica.get(),wybor_slowko.get())
+            wynik=self.edytuj_wpis_okno(do_edycji_str)
+            print('wynik=',wynik)
+            if wynik=='czysc_wyniki_szukania':
+                print('ma czyscic wyniki_szukania')
+                __czysc_wyniki_szukania__()
 
         def kasowanie_wpisu_guzikiem():
             "po skasowaniu: aktualizuj_napis_ilosc_wpisow()"
@@ -576,7 +606,7 @@ class Okno:
                 if do_skasowania_wpis:
                     self.logika.kasuj_wpis(do_skasowania_wpis)
                     guzik_kasuj.config(state=TK.DISABLED)
-                    wyniki_szukania.delete(0,TK.END)
+                    __czysc_wyniki_szukania__()
                     self.aktualizuj_napis_ilosc_wpisow()
             else:
                 do_skasowania_wpis=KL.KW.str_do_wpis_slowko(do_skasowania_str)
@@ -586,25 +616,37 @@ class Okno:
                     wyniki_szukania.delete(0,TK.END)
                     self.aktualizuj_napis_ilosc_wpisow()
 
+            if wybrany_typ=='u':
+                okienko.title('Szukanie Ulic')
+            elif wybrany_typ=='s':
+                okienko.title('Szukanie Słówek')
+
         def ustaw_szukanie_ulic():
             #print('ulica do szukania')
             wybor_ulica.set('ulice')
             wybor_slowko.set('')
             okienko.title('Szukanie Ulic')
+            guzik_kasuj.config(state=TK.DISABLED)
+            guzik_edytuj.config(state=TK.DISABLED)
+            wyniki_szukania.delete(0,TK.END)
 
         def ustaw_szukanie_slowek():
             #print('slowko do szukania')
             wybor_ulica.set('')
             wybor_slowko.set('slowka')
             okienko.title('Szukanie Słówek')
+            guzik_kasuj.config(state=TK.DISABLED)
+            guzik_edytuj.config(state=TK.DISABLED)
+            wyniki_szukania.delete(0,TK.END)
 
         def zaznaczony_wpis(_):
-            print('zaznaczony_wpis')
             ktory=wyniki_szukania.curselection()
-            #print(wyniki_szukania.get(ktory))
+            #print('zaznaczony_wpis',ktory)
+            print('zaznaczony_wpis',wyniki_szukania.get(ktory))
             uzyskany_wpis=wyniki_szukania.get(ktory)[3:]
             print('uzyskany_wpis',uzyskany_wpis)
             guzik_kasuj.config(state=TK.NORMAL)
+            guzik_edytuj.config(state=TK.NORMAL)
 
         def szukanie(_):
             #print('wybrane',wybor_slowko.get(),wybor_ulica.get(),'_')
@@ -619,12 +661,20 @@ class Okno:
             if pole_szukania.get()=='' or len(pole_szukania.get())<3:
                 wyniki_szukania.delete(0,TK.END)
                 wyniki_szukania.insert(1,'---wpisz przynajmniej 3 znaki---')
+                if wybrany_typ=='u':
+                    okienko.title('Szukanie Ulic')
+                elif wybrany_typ=='s':
+                    okienko.title('Szukanie Słówek')
             else:
                 co_znalazl=self.logika.szukaj_wpis(szukany_str=pole_szukania.get(),typ=wybrany_typ)
                 #print('co_znalazl',co_znalazl)
                 if not co_znalazl:
                     wyniki_szukania.delete(0,TK.END)
                     wyniki_szukania.insert(TK.END,'---nic się nie znalazło---')
+                    if wybrany_typ=='u':
+                        okienko.title('Szukanie Ulic')
+                    elif wybrany_typ=='s':
+                        okienko.title('Szukanie Słówek')
                 else:
                     wyniki_szukania.delete(0,TK.END)
                     #print('co_znalazl',co_znalazl)
@@ -634,13 +684,23 @@ class Okno:
                             #print('ktory',ktory)
                             #wyniki_szukania.insert(TK.END,'---'+str(co_znalazl[ktory])+'\n')
                             wyniki_szukania.insert(ktory[0]+1,'---'+str(ktory[1]))
+                            if wybrany_typ=='u':
+                                okienko.title('Szukanie Ulic ('+str(len(co_znalazl))+')')
+                            elif wybrany_typ=='s':
+                                okienko.title('Szukanie Słówek ('+str(len(co_znalazl))+')')
                     else:
                         #jak tylko 1 jest
                         wyniki_szukania.insert(1,'---'+str(co_znalazl))
+                        if wybrany_typ=='u':
+                            okienko.title('Szukanie Ulic (1)')
+                        elif wybrany_typ=='s':
+                            okienko.title('Szukanie Słówek (1)')
 
         okienko=TK.Toplevel(self.okno)
         okienko.geometry('+350+300')
+        okienko.wm_iconphoto(False,TK.PhotoImage(file='logo2.png'))
         okienko.bind('<KeyPress-Escape>',zamknij_okienko)
+        okienko.protocol("WM_DELETE_WINDOW",zamknij_okienko)
 
         wybor_ulica=TK.StringVar('')
         wybor_slowko=TK.StringVar('')
@@ -649,8 +709,11 @@ class Okno:
                         command=ustaw_szukanie_ulic,value='ulice',font=self.czcionka_small)
         radio2=TK.Radiobutton(okienko,text='Słówka',variable=wybor_slowko,
                         command=ustaw_szukanie_slowek,value='slowka',font=self.czcionka_small)
-        guzik_kasuj=TK.Button(okienko,text='Kasuj Wpis',state=TK.DISABLED,
+        guzik_kasuj=TK.Button(okienko,text='Kasuj Wpis',state=TK.DISABLED,width=14,
                         command=kasowanie_wpisu_guzikiem,font=self.czcionka_small)
+        guzik_edytuj=TK.Button(okienko,text='Edytuj Wpis',state=TK.DISABLED,width=14,
+                        command=edytowanie_wpisu_guzikiem,font=self.czcionka_small)
+
 
         if self.logika.procent_slowek_reszta_ulic==0:
             wybor_slowko.set('')
@@ -663,11 +726,11 @@ class Okno:
 
         napis1=TK.Label(okienko,text="Wpisz tutaj (przynajmniej 3 znaki):",font=self.czcionka_small)
 
-        pole_szukania=TK.Entry(okienko,font=self.czcionka_small,width=30)
+        pole_szukania=TK.Entry(okienko,font=self.czcionka_small,width=40)
         pole_szukania.bind("<Return>",szukanie)
         pole_szukania.focus_set()
 
-        wyniki_szukania=TK.Listbox(okienko,font=self.czcionka_small,width=50,height=17)
+        wyniki_szukania=TK.Listbox(okienko,font=self.czcionka_small,width=56,height=17)
         wyniki_szukania.bind("<<ListboxSelect>>",zaznaczony_wpis)
 
         if type(self.logika.biezacy_wpis) is KL.KWU:
@@ -675,16 +738,17 @@ class Okno:
         else:
             ustaw_szukanie_slowek()
 
-        #grid-y okienka:
-        radio1.grid(row=0,column=0)
-        radio2.grid(row=0,column=1)
-        guzik_kasuj.grid(row=0,column=2,sticky='E')
+        #grid-y okienka szukania
+        radio1.grid(row=0,column=0,columnspan=2)
+        radio2.grid(row=0,column=1,columnspan=2)
+        guzik_kasuj.grid(row=0,column=3,sticky='E')
         napis1.grid(row=1,columnspan=3)
-        pole_szukania.grid(row=2,columnspan=3)
-        wyniki_szukania.grid(row=3,rowspan=9,columnspan=3)
-        #koniec f.szukaj_wpisow_ok
+        guzik_edytuj.grid(row=1,column=3,sticky='E')
+        pole_szukania.grid(row=2,columnspan=3,sticky='E')
+        wyniki_szukania.grid(row=3,rowspan=9,columnspan=4)
+        #koniec f.szukaj_wpisow_okno
 
-    def dodaj_wpis_ok(self,_):
+    def dodaj_wpis_okno(self,_):
         '''
         wykorzystuje metodę dodaj_wpis klasy Logika
 
@@ -755,7 +819,9 @@ class Okno:
 
         okienko=TK.Toplevel(self.okno)
         okienko.geometry('+350+300')
+        okienko.wm_iconphoto(False,TK.PhotoImage(file='logo2.png'))
         okienko.bind("<KeyPress-Escape>",zamknij_okienko)
+        okienko.protocol("WM_DELETE_WINDOW",zamknij_okienko)
 
         wybor_ulica=TK.StringVar('')
         wybor_slowko=TK.StringVar('')
@@ -807,41 +873,113 @@ class Okno:
         wpis2.grid(row=4,columnspan=2)
         guzik_cofaj.grid(row=7,column=0)
         guzik_potwierdz.grid(row=7,column=1)
-        #koniec f.dodaj_wpis_ok
+        #koniec f.dodaj_wpis_okno
+
+    def edytuj_wpis_okno(self,str_do_edycji):
+        '''
+        jedna metoda wykorzystywana w 2 sytuacjach:
+            przy edycji wpisów podczas nauki
+            i podczas edycji wpisu wyszukanego(ctrl+s)
+
+        rozpoznaje typ argumentu str_do_edycji:
+            -klasa Wpis: wtedy edycja wyszukanego wpisu(czyli tego z argumentu)
+            -klasa TK.Event: edycja bieżacego wpisu(czyli z self.logika.biezacy_wpis)
+
+        enum tryb_edycji wartości: EDYCJA_SLOWKA EDYCJA_ULICY WYSZUKANE_SLOWKO WYSZUKANA_ULICA
+
+        pracuje na wpis_slowko/wpis_ulica i dopiero jak jest zatwierdzenie zmian to przenosi to do self.logika.lista_*
+        orginal zapamietuje w starszy bo potrzebne do self.logika.zmien_wpis()
+        '''
+        def zamiana_kolejnosci(_=None):
+            '''
+            ang->pol + pol->ang. czyli dla EDYCJA_SLOWKA i WYSZUKANE_SLOWKO
+            robi to na wpisie ustawionym w wpis_slowko/wpis_ulica
+            '''
+            print('f.zamiana_kolejnosci.tryb_edycji=',tryb_edycji)
+
+            #zamien w GUI
+            komp.wpis1.delete(0,TK.END)
+            komp.wpis1.insert(0,wpis_slowko.drugi)
+            komp.wpis2.delete(0,TK.END)
+            komp.wpis2.insert(0,wpis_slowko.pierwszy)
+
+            #zamien w logika.lista_slowek
+            tmp_pierwszy=wpis_slowko.pierwszy
+            wpis_slowko.pierwszy=wpis_slowko.drugi
+            wpis_slowko.drugi=tmp_pierwszy
 
 
-    #def kasuj_wpis_ok(self,_):
-    #    "kasuj wpis"
-    #    print('f.kasuj_wpis_ok. kasowanie powinno być częścią szukania raczej')
-
-    def edytuj_wpis_ok(self,event):
-        "edycja wpisu"
-        print('f.edytuj_wpis_ok')
-        if self.logika.komunikat_bledu!='':
-            print('---jest błąd:',self.logika.komunikat_bledu,'---')
-            return
+            '''tmp_pierwszy=self.logika.biezacy_wpis.pierwszy
+            self.logika.biezacy_wpis.pierwszy=self.logika.biezacy_wpis.drugi
+            self.logika.biezacy_wpis.drugi=tmp_pierwszy
+            print('zamieniłem kolejnosc pierwszy/drugi')
+            if tryb_edycji is tryb_edycji.EDYCJA_SLOWKA:
+                #self.entry1_tresc.set(self.logika.biezacy_wpis.pierwszy)
+                #self.entry2_tresc.set(self.logika.biezacy_wpis.drugi)
+                komp.wpis1.delete(0,TK.END)
+                komp.wpis2.delete(0,TK.END)
+            if tryb_edycji is tryb_edycji.WYSZUKANE_SLOWKO:
+                print('powinna być zamiana kolejności WYSZUKANE_SLOWKO')'''
 
         def zamknij_okienko_bez_zmian(_=None):
-            "jak chcesz tylko zamknąć okno"
-            #print('zamknij_okienko_bez_zmian')
+            '''jak chcesz tylko zamknąć okno
+                czyli porzuca zmiany z wpis_slowko/wpis_ulica
+            '''
+            print('zamknij_okienko_bez_zmian')
             okienko.destroy()
 
         def zamknij_okienko_zastosuj_zmiany(_=None):
-            "zastosowanie i zamykanie okna"
-            #print('zamknij_okienko_zastosuj_zmiany')
-            #print('wpis_biezacy',self.logika.biezacy_wpis,type(self.logika.biezacy_wpis))
+            '''
+            zastosowanie i zamykanie okna czyli:
+                z wpis_slowko/wpis_ulica do self.logika.lista_slowek/lista_ulic
+            jeśli edycja jest podfunkcją wyszukiwania to:
+                czysc wyniki_szukania
+            jak odbywa się tylko edycja:
+                ustaw entry1_tresc,entry2_tresc
 
-            #użyłem type bo isinstance nie rozróżnia klas bazowych i pochodnych(to właśnie to jest)
-            if type (self.logika.biezacy_wpis) is KL.KWU:
+            na koniec zamknij okno
+            '''
+            print('f.zamknij_okienko_zastosuj_zmiany',tryb_edycji)
+
+            if tryb_edycji is tryb_edycji.EDYCJA_ULICY:
+                if komp.wpis1.get()!='':
+                    wpis_ulica=KL.KWU(komp.wpis1.get(),komp.wpis3.get(),int(komp.wpis4.get()))
+                    print('Unowszy',wpis_ulica)
+                else:
+                    print('---Uniemożna podmienić na puste---',tryb_edycji)
+
+            elif tryb_edycji is tryb_edycji.EDYCJA_SLOWKA:
+                if komp.wpis1.get()!='' and komp.wpis2.get()!='':
+                    wpis_slowko=KL.KWS(komp.wpis1.get(),komp.wpis2.get(),komp.wpis3.get(),int(komp.wpis4.get()))
+                    print('Snowszy=',wpis_slowko)
+                else:
+                    print('---Sniemożna podmienić na puste---',tryb_edycji)
+
+            elif tryb_edycji is tryb_edycji.WYSZUKANA_ULICA:
+                if komp.wpis1.get()!='':
+                    wpis_ulica=KL.KWU(komp.wpis1.get(),komp.wpis3.get(),int(komp.wpis4.get()))
+                    print('Unowszy',wpis_ulica)
+                else:
+                    print('---Uniemożna podmienić na puste---',tryb_edycji)
+
+            elif tryb_edycji is tryb_edycji.WYSZUKANE_SLOWKO:
+                if komp.wpis1.get()!='' and komp.wpis2.get()!='':
+                    wpis_slowko=KL.KWS(komp.wpis1.get(),komp.wpis2.get(),komp.wpis3.get(),int(komp.wpis4.get()))
+                    print('Snowszy=',wpis_slowko)
+                else:
+                    print('---Sniemożna podmienić na puste---',tryb_edycji)
+
+
+            '''if type (self.logika.biezacy_wpis) is KL.KWU:
                 #print('stwierdzam ze ulica 1',wpis1.get(),'3',wpis3.get(),'4',wpis4.get())
-                if wpis1.get()!='' and wpis2.get()=='' and wpis3.get()!='' and wpis4.get()!='':
-                    nowszy=KL.KWU(wpis1.get(),wpis3.get(),int(wpis4.get()))
+                if komp.wpis1.get()!='' and komp.wpis2.get()=='' and komp.wpis3.get()!='' and komp.wpis4.get()!='':
+                    komp.nowszy=KL.KWU(komp.wpis1.get(),komp.wpis3.get(),int(komp.wpis4.get()))
                     #print('Unowszy=',nowszy)
                     #print('starszy=',starszy)
-                    if starszy!=nowszy:
+                    if komp.starszy!=komp.nowszy:
                         print('--- udana podmiana---')
-                        self.logika.zmien_wpis(starszy,nowszy)
-                        self.logika.biezacy_wpis=nowszy
+                        self.logika.zmien_wpis(komp.starszy,komp.nowszy)
+                        self.logika.biezacy_wpis=komp.nowszy
                     self.entry1_tresc.set(self.logika.biezacy_wpis.pierwszy)
                     self.entry2_tresc.set('')
                     self.logika.rodzaj_biezacego_wpisu=''
@@ -850,102 +988,319 @@ class Okno:
             else:
                 #print('stwierdzam ze słówko 1',wpis1.get(),'2',wpis2.get(),
                 #                    '3',wpis3.get(),'4',wpis4.get())
-                if wpis1.get()!='' and wpis2.get()!='' and wpis3.get()!='' and wpis4.get()!='':
-                    nowszy=KL.KWS(wpis1.get(),wpis2.get(),wpis3.get(),int(wpis4.get()))
+                if komp.wpis1.get()!='' and komp.wpis2.get()!='' and komp.wpis3.get()!='' and komp.wpis4.get()!='':
+                    komp.nowszy=KL.KWS(komp.wpis1.get(),komp.wpis2.get(),komp.wpis3.get(),int(komp.wpis4.get()))
                     #print('Snowszy=',nowszy)
                     #print('starszy=',starszy)
-                    if starszy!=nowszy:
+                    if komp.starszy!=komp.nowszy:
                         print('--- udana podmiana---')
-                        self.logika.zmien_wpis(starszy,nowszy)
-                        self.logika.biezacy_wpis=nowszy
+                        self.logika.zmien_wpis(komp.starszy,komp.nowszy)
+                        self.logika.biezacy_wpis=komp.nowszy
                     self.entry1_tresc.set(self.logika.biezacy_wpis.pierwszy)
                     self.entry2_tresc.set(self.logika.biezacy_wpis.drugi)
                     self.logika.rodzaj_biezacego_wpisu=''
                 else:
-                    print('---niemożna podmienić na puste---')
+                    print('---niemożna podmienić na puste---')'''
+
+            if tryb_edycji in [tryb_edycji.EDYCJA_ULICY,tryb_edycji.WYSZUKANA_ULICA]:
+                self.logika.zmien_wpis(starszy,wpis_ulica)
+
+            elif tryb_edycji in [tryb_edycji.EDYCJA_SLOWKA,tryb_edycji.WYSZUKANE_SLOWKO]:
+                self.logika.zmien_wpis(starszy,wpis_slowko)
+
+            elif tryb_edycji in [tryb_edycji.EDYCJA_SLOWKA,tryb_edycji.EDYCJA_ULICY]:
+                entry1_tresc.set(wpis_slowko.pierwszy)
+                entry1_tresc.set(wpis_slowko.drugi)
+
             okienko.destroy()
+            if tryb_edycji in [tryb_edycji.WYSZUKANE_SLOWKO,tryb_edycji.WYSZUKANA_ULICA]:
+                return 'czysc_wyniki_szukania'
+            return False
+
+
+        def okresl_tryb_edycji():
+            ""
+            tryb_edycji=EN.Enum('tryb_edycji',['EDYCJA_SLOWKA',
+                                               'EDYCJA_ULICY',
+                                               'WYSZUKANE_SLOWKO',
+                                               'WYSZUKANA_ULICA'])
+
+            if type(str_do_edycji) is TK.Event:
+                #print('jest event. czyli normalna edycja',self.logika.biezacy_wpis,'=')
+                if type(self.logika.biezacy_wpis) is KL.KWU:
+                    #print('mówię że to EDYCJA_ULICY')
+                    tryb_edycji=tryb_edycji.EDYCJA_ULICY
+                else:
+                    #print('mówię że to EDYCJA_SLOWKA')
+                    tryb_edycji=tryb_edycji.EDYCJA_SLOWKA
+            elif KL.KW.czy_str_jest_klasy_wpis_ulica(str_do_edycji):
+                #print('mówię że to WYSZUKANA_ULICA')
+                tryb_edycji=tryb_edycji.WYSZUKANA_ULICA
+            elif KL.KW.czy_str_jest_klasy_wpis_slowko(str_do_edycji):
+                #print('mówię że to WYSZUKANE_SLOWKO')
+                tryb_edycji=tryb_edycji.WYSZUKANE_SLOWKO
+
+            print('---określony tryb_edycji',tryb_edycji)
+            return tryb_edycji
+
+        def tworz_komponenty_okienka_bez_ustawiania_ich():
+            "tworzenie komponentow tylko(bez wartosci ustawionych)"
+            class Komp:
+                pass
+            komp=Komp()
+
+            komp.podpis1=TK.Label(okienko,font=self.czcionka_small)
+            komp.wpis1=TK.Entry(okienko,font=self.czcionka_middle,width=30)
+
+            komp.podpis2=TK.Label(okienko,font=self.czcionka_small)
+            komp.wpis2=TK.Entry(okienko,font=self.czcionka_middle,width=30)
+
+            komp.podpis3=TK.Label(okienko,text='Tryb:',font=self.czcionka_small)
+            komp.wpis3=TTK.Combobox(okienko,font=self.czcionka_middle,width=30,state='readonly')
+            tryby=('A','B','C')
+            komp.wpis3['values']=tryby
+
+            komp.podpis4=TK.Label(okienko,text='Ile Razy Wylosowany:',font=self.czcionka_small)
+            komp.wpis4=TTK.Combobox(okienko,font=self.czcionka_middle,width=30,state='readonly')
+
+            komp.guzik_cofaj=TK.Button(okienko,text='Rezygnuj ze zmian',font=self.czcionka_small,
+                                        command=zamknij_okienko_bez_zmian)
+            komp.guzik_zamien=TK.Button(okienko,text='Zamień kolejność',font=self.czcionka_small,
+                                        command=zamiana_kolejnosci)
+            komp.guzik_potwierdz=TK.Button(okienko,text='Zatwierdź(Escape)',font=self.czcionka_small,
+                                        command=zamknij_okienko_zastosuj_zmiany)
+
+            #gridowanie
+            komp.podpis1.grid(row=0,columnspan=3)
+            komp.wpis1.grid(row=1,columnspan=3)
+            komp.podpis2.grid(row=2,columnspan=3)
+            komp.wpis2.grid(row=3,columnspan=3)
+            komp.podpis3.grid(row=4,columnspan=3)
+            komp.wpis3.grid(row=5,columnspan=3)
+            komp.podpis4.grid(row=6,columnspan=3)
+            komp.wpis4.grid(row=7,columnspan=3)
+            komp.guzik_cofaj.grid(row=8,column=0)
+            komp.guzik_zamien.grid(row=8,column=1)
+            komp.guzik_potwierdz.grid(row=8,column=2)
+
+            return komp
+
+        def ustaw_komponenty_wg_trybu_edycji(jaki_tryb_edycji,wpis_slowko,wpis_ulica):
+            '''
+            zrobione dla każdego trybu oddzielnie. chciałem uniknąć duplikowania
+            ale czytelność jest ważniejsza
+            '''
+
+            #print('---f.ustaw_komponenty_wg_trybu_edycji. tryb_edycji=',tryb_edycji)
+
+            if tryb_edycji is tryb_edycji.EDYCJA_ULICY:
+                #bez danych
+                okienko.title('Edycja Ulicy')
+                komp.podpis1.config(text='Nazwa Ulicy:')
+                komp.podpis2.config(text='')
+                komp.wpis2.config(state=TK.DISABLED)
+                komp.wpis1.delete(0,TK.END)
+                komp.wpis2.delete(0,TK.END)
+                komp.wpis4.delete(0,TK.END)
+                komp.guzik_zamien.config(state=TK.DISABLED)
+
+                #teraz ustawianie danymi
+                komp.wpis1.insert(0,self.logika.biezacy_wpis.pierwszy)
+                komp.wpis3.current(ord(self.logika.biezacy_wpis.tryb)-65)
+
+                ilosci=tuple(range(0,self.logika.biezacy_wpis.ile_razy_wylos+11))
+                komp.wpis4['values']=ilosci
+                komp.wpis4.current(self.logika.biezacy_wpis.ile_razy_wylos)
+
+                #poszerzanie dla dużego wpisu
+                dlugosc=len(self.logika.biezacy_wpis.pierwszy)
+                if dlugosc>30:
+                    print('poszerzamU')
+                    komp.wpis1.config(width=dlugosc+3)
+
+
+            if tryb_edycji is tryb_edycji.EDYCJA_SLOWKA:
+                #bez danych
+                okienko.title('Edycja Słówka')
+                komp.podpis1.config(text='Angielski:')
+                komp.podpis2.config(text='Polski:')
+                komp.wpis2.config(state=TK.NORMAL)
+                komp.wpis1.delete(0,TK.END)
+                komp.wpis2.delete(0,TK.END)
+                komp.wpis4.delete(0,TK.END)
+                komp.guzik_zamien.config(state=TK.NORMAL)
+
+                #teraz ustawianie danymi
+                komp.wpis1.insert(0,self.logika.biezacy_wpis.pierwszy)
+                komp.wpis2.insert(0,self.logika.biezacy_wpis.drugi)
+                komp.wpis3.current(ord(self.logika.biezacy_wpis.tryb)-65)
+
+                ilosci=tuple(range(0,self.logika.biezacy_wpis.ile_razy_wylos+11))
+                komp.wpis4['values']=ilosci
+                komp.wpis4.current(self.logika.biezacy_wpis.ile_razy_wylos)
+
+                #poszerzanie dla dużego wpisu
+                dlugosc=max(len(self.logika.biezacy_wpis.pierwszy),len(self.logika.biezacy_wpis.drugi))
+                if dlugosc>30:
+                    print('poszerzamS')
+                    komp.wpis1.config(width=dlugosc+3)
+                    komp.wpis2.config(width=dlugosc+3)
+
+
+            if tryb_edycji is tryb_edycji.WYSZUKANE_SLOWKO:
+                #bez danych
+                okienko.title('Edycja Słówka')
+                komp.podpis1.config(text='Angielski:')
+                komp.podpis2.config(text='Polski:')
+                komp.wpis2.config(state=TK.NORMAL)
+                komp.wpis1.delete(0,TK.END)
+                komp.wpis2.delete(0,TK.END)
+                komp.wpis4.delete(0,TK.END)
+                komp.guzik_zamien.config(state=TK.NORMAL)
+
+                #teraz ustawianie danymi
+                wpis_slowko=KL.KW.str_do_wpis_slowko(str_do_edycji)
+                komp.wpis1.insert(0,wpis_slowko.pierwszy)
+                komp.wpis2.insert(0,wpis_slowko.drugi)
+                komp.wpis3.current(ord(wpis_slowko.tryb)-65)
+
+                ilosci=tuple(range(0,wpis_slowko.ile_razy_wylos+11))
+                komp.wpis4['values']=ilosci
+                komp.wpis4.current(wpis_slowko.ile_razy_wylos)
+
+                #poszerzanie dla dużego wpisu
+                dlugosc=max(len(wpis_slowko.pierwszy),len(wpis_slowko.drugi))
+                if dlugosc>30:
+                    print('poszerzamS')
+                    komp.wpis1.config(width=dlugosc+3)
+                    komp.wpis2.config(width=dlugosc+3)
+
+            if tryb_edycji is tryb_edycji.WYSZUKANA_ULICA:
+                #bez danych
+                okienko.title('Edycja Ulicy')
+                komp.podpis1.config(text='Nazwa Ulicy:')
+                komp.podpis2.config(text='')
+                komp.wpis2.config(state=TK.DISABLED)
+                komp.wpis1.delete(0,TK.END)
+                komp.wpis2.delete(0,TK.END)
+                komp.wpis4.delete(0,TK.END)
+                komp.guzik_zamien.config(state=TK.DISABLED)
+
+                #teraz ustawianie danymi
+                wpis_ulica=KL.KW.str_do_wpis_ulica(str_do_edycji)
+                komp.wpis1.insert(0,wpis_ulica.pierwszy)
+                komp.wpis3.current(ord(wpis_ulica.tryb)-65)
+
+                ilosci=tuple(range(0,wpis_ulica.ile_razy_wylos+11))
+                komp.wpis4['values']=ilosci
+                komp.wpis4.current(wpis_ulica.ile_razy_wylos)
+
+                #poszerzanie dla dużego wpisu
+                dlugosc=len(wpis_ulica.pierwszy)
+                if dlugosc>30:
+                    print('poszerzamS')
+                    komp.wpis1.config(width=dlugosc+3)
+                    komp.wpis2.config(width=dlugosc+3)
+
+
+                '''komp.wpis1.insert(0,self.logika.biezacy_wpis.pierwszy)
+                ilosci=tuple(range(0,self.logika.biezacy_wpis.ile_razy_wylos+11))
+                komp.wpis4['values']=ilosci
+                komp.wpis4.current(self.logika.biezacy_wpis.ile_razy_wylos)
+                komp.starszy=self.logika.biezacy_wpis
+
+                komp.wpis2.config(state=TK.DISABLED)
+                komp.wpis2.config(state=TK.NORMAL)
+
+
+                dlugosc=len(self.logika.biezacy_wpis.pierwszy)
+                #print('Udlugosc wpis1',dlugosc)
+                if dlugosc>30:
+                    print('poszerzamU')
+                    komp.wpis1.config(width=dlugosc+3)
+
+                komp.wpis2.insert(0,self.logika.biezacy_wpis.drugi)
+                s_dly_pie=len(self.logika.biezacy_wpis.pierwszy)
+                s_dly_dru=len(self.logika.biezacy_wpis.drugi)
+                dluzszy=max(s_dly_pie,s_dly_dru)
+                if dluzszy>30:
+                    print('poszerzamS')
+                    komp.wpis1.config(width=dluzszy+3)
+                    komp.wpis2.config(width=dluzszy+3)
+
+                print('Sstr_do_edycji',str_do_edycji)
+                wpis_slowko=KL.KW.str_do_wpis_slowko(str_do_edycji)
+                komp.wpis1.insert(0,wpis_slowko.pierwszy)
+                komp.wpis2.insert(0,wpis_slowko.drugi)
+                dluzszy=max(len(wpis_slowko.pierwszy),len(wpis_slowko.drugi))
+                if dluzszy>30:
+                    print('poszerzamS')
+                    komp.wpis1.config(width=dluzszy+3)
+                    komp.wpis2.config(width=dluzszy+3)
+
+                print('Ustr_do_edycji',str_do_edycji)
+                wpis_ulica=KL.KW.str_do_wpis_ulica(str_do_edycji)
+                komp.wpis1.insert(0,wpis_ulica.pierwszy)
+                dlugosc=len(wpis_ulica.pierwszy)
+                #print('Udlugosc wpis1',dlugosc)
+                if dlugosc>30:
+                    print('poszerzamU')
+                    komp.wpis1.config(width=dlugosc+3)'''
+
+
+                #if self.logika.biezacy_wpis.tryb=='A':
+                #wpis3.current(0) #text=self.logika.biezacy_wpis.tryb)
+                '''wpis3.delete(0,TK.END)
+                wpis3.insert(0,self.logika.biezacy_wpis.tryb)
+                wpis4.delete(0,TK.END)
+                wpis4.insert(0,self.logika.biezacy_wpis.ile_razy_wylos)'''
+
+                #print('stwierdzam ze slowko')
+                #print('pie',s_dly_pie,'dru',s_dly_dru,'Sdluzszy ma',dluzszy)
+                '''wpis3.delete(0,TK.END)
+                wpis3.insert(0,self.logika.biezacy_wpis.tryb)
+                wpis4.delete(0,TK.END)
+                wpis4.insert(0,self.logika.biezacy_wpis.ile_razy_wylos)'''
+
+            komp.wpis1.focus_set()
+            #ustaw_komponenty_wg_trybu_edycji
+
+        #tu się zaczyna f.edytuj_wpis_okno
+        if self.logika.komunikat_bledu!='':
+            print('---jest błąd:',self.logika.komunikat_bledu,'---')
+            return
+
+        tryb_edycji=okresl_tryb_edycji()
+        wpis_slowko=None
+        wpis_ulica=None
+        starszy=None
+        nowszy=None
+
+        if tryb_edycji is tryb_edycji.EDYCJA_SLOWKA:
+            wpis_slowko=self.logika.biezacy_wpis
+            starszy=wpis_slowko
+
+        if tryb_edycji is tryb_edycji.WYSZUKANE_SLOWKO:
+            wpis_slowko=KL.KW.str_do_wpis_slowko(str_do_edycji)
+            starszy=wpis_slowko
+
+        if tryb_edycji is tryb_edycji.EDYCJA_ULICY:
+            wpis_ulica=self.logika.biezacy_wpis
+            starszy=wpis_ulica
+
+        if tryb_edycji is tryb_edycji.WYSZUKANA_ULICA:
+            wpis_ulica=KL.KW.str_do_wpis_ulica(str_do_edycji)
+            starszy=wpis_ulica
 
 
         okienko=TK.Toplevel(self.okno)
-        okienko.title('Edycja wpisu')
         okienko.geometry('+350+300')
+        okienko.wm_iconphoto(False,TK.PhotoImage(file='logo2.png'))
         okienko.bind("<KeyPress-Escape>",zamknij_okienko_zastosuj_zmiany)
+        okienko.protocol("WM_DELETE_WINDOW",zamknij_okienko_bez_zmian)
 
-        podpis1=TK.Label(okienko,font=self.czcionka_small)
-        wpis1=TK.Entry(okienko,font=self.czcionka_middle,width=30)
-        podpis2=TK.Label(okienko,font=self.czcionka_small)
-        wpis2=TK.Entry(okienko,font=self.czcionka_middle,width=30)
-        podpis3=TK.Label(okienko,text='Tryb:',font=self.czcionka_small)
-        wpis3=TTK.Combobox(okienko,font=self.czcionka_middle,width=30,state='readonly')
+        komp=tworz_komponenty_okienka_bez_ustawiania_ich()
 
-        tryby=('A','B','C')
-        wpis3['values']=tryby
-        #wpis3.current(ord(self.biezacy_tryb)-65)
-        #print('trybik',ord(self.logika.biezacy_wpis.tryb)-65)
-        wpis3.current(ord(self.logika.biezacy_wpis.tryb)-65)
+        ustaw_komponenty_wg_trybu_edycji(tryb_edycji,wpis_slowko,wpis_ulica)
 
-        podpis4=TK.Label(okienko,text='Ile Razy Wylosowany:',font=self.czcionka_small)
-        wpis4=TTK.Combobox(okienko,font=self.czcionka_middle,width=30,state='readonly')
-
-        ilosci=tuple(range(0,self.logika.biezacy_wpis.ile_razy_wylos+11))
-        wpis4['values']=ilosci
-        #print('ilosci',ilosci)
-        wpis4.current(self.logika.biezacy_wpis.ile_razy_wylos)
-
-        #print('biezacy',self.logika.biezacy_wpis)
-        starszy=self.logika.biezacy_wpis
-
-        guzik_cofaj=TK.Button(okienko,text='Rezygnuj ze zmian',font=self.czcionka_small,
-                                    command=lambda:zamknij_okienko_bez_zmian(event))
-        guzik_potwierdz=TK.Button(okienko,text='Zatwierdź(Escape)',font=self.czcionka_small,
-                                    command=lambda:zamknij_okienko_zastosuj_zmiany(event))
-
-
-        if type(self.logika.biezacy_wpis) is KL.KWU:
-            #print('stwierdzam ze ulica')
-            podpis1.config(text='Nazwa Ulicy:')
-            podpis2.config(text='')
-            wpis1.delete(0,TK.END)
-            wpis1.insert(0,self.logika.biezacy_wpis.pierwszy)
-            wpis2.delete(0,TK.END)
-            wpis2.config(state=TK.DISABLED)
-            #if self.logika.biezacy_wpis.tryb=='A':
-            #wpis3.current(0) #text=self.logika.biezacy_wpis.tryb)
-            wpis3.delete(0,TK.END)
-            wpis3.insert(0,self.logika.biezacy_wpis.tryb)
-            wpis4.delete(0,TK.END)
-            wpis4.insert(0,self.logika.biezacy_wpis.ile_razy_wylos)
-        else:
-            #print('stwierdzam ze slowko')
-            podpis1.config(text='Angielski:')
-            podpis2.config(text='Polski:')
-            wpis1.delete(0,TK.END)
-            wpis1.insert(0,self.logika.biezacy_wpis.pierwszy)
-            wpis2.delete(0,TK.END)
-            wpis2.insert(0,self.logika.biezacy_wpis.drugi)
-            wpis2.config(state=TK.NORMAL)
-            wpis3.delete(0,TK.END)
-            wpis3.insert(0,self.logika.biezacy_wpis.tryb)
-            wpis4.delete(0,TK.END)
-            wpis4.insert(0,self.logika.biezacy_wpis.ile_razy_wylos)
-
-        wpis1.focus_set()
-
-        podpis1.grid(row=0,columnspan=2)
-        wpis1.grid(row=1,columnspan=2)
-        podpis2.grid(row=2,columnspan=2)
-        wpis2.grid(row=3,columnspan=2)
-        podpis3.grid(row=4,columnspan=2)
-        wpis3.grid(row=5,columnspan=2)
-        podpis4.grid(row=6,columnspan=2)
-        wpis4.grid(row=7,columnspan=2)
-        guzik_cofaj.grid(row=8,column=0)
-        guzik_potwierdz.grid(row=8,column=1)
-        #koniec f.edytuj_wpis_ok
-
-if __name__=='__main__':
-    #bo można podać argument procent_slowek_reszta_ulic zakres 0-100
-    if len(sys.argv)>1:
-        App=Okno(int(sys.argv[1]))
-    else:
-        App=Okno()
+        #koniec f.edytuj_wpis_okno

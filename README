@@ -5,32 +5,25 @@ Co robi program?
 	Klawisz Spacja to podstawowy klawisz programu.
 
 Uruchomienie programu:
-	./klasa_okno.py lub python klasa_okno.py
+	./main.py (prawa uruchamiania nadać) lub python main.py
 	opcjonalny argument: liczba od 0 do 100 oznacza procent_slowek_reszta_ulic
 		czyli 100 oznacza tylko slowka a 0 oznacza tylko ulice
 
 Obsługa:
 	Po uruchomieniu:
-		spacja pokazuje znaczenie wpisu lub następny wpis
-	skróty klawiszowe:
-		ctrl+q / Escape - zamyka program
-		ctrl+ */+/- reset/zwiększa/zmniejsza czcionkę
-		ctrl+0 zmniejszanie ilości wylosowań bieżącego wpisu
-		ctrl+z zerowanie wpisów(ilość wylosowań na 0),wszystkie wpisy na tryb A
-		edycja wpisów(CRUD):
-			ctrl+e edycja bieżącego wpisu
-			ctrl+d dodaj wpis
-			ctrl+s szukaj wpisów(też kasowanie)
-		ctrl+a/b/c - zmiana trybu bieżącego słówka
-		ctrl+t - zmiana trybu 
+		spacja - następny wpis(lub znaczenie)
+		ctrl+q/Escape - wyjście z potwierdzeniem
+		ctrl+z zerowanie ilości wylosowań/trybów dla słówek/ulic
+		CRUD:
+			F2 szukanie wpisów
+			F3 dodawanie nowych wpisów
+			F4 edycja bieżącego wpisu
+			ctrl+a/b/c ustaw tryb bieżącego wpisu
+		ctrl+0 - cofnij ilość wylosowań bieżącego wpisu
+		ctrl+t zmień bieżący tryb
+		ctrl+s pokaż statystyki
+		ctrl+*/+/- zerowanie/powiększanie/zmniejszanie rozmiaru czcionki
+		F1 - pokaż tą pomoc
 
 Zastosowane technologie:
 	python/tkinter, git, vim, linux(debian),agile.
-
-Dlaczego został napisany:
-	Są powody sądzić że powinna być równowaga między przyjmowaniem informacji 
-	(np.poprzez czytanie) a wyciąganiem informacji z głowy (przepominanie sobie).
-	Program realizuje część wyciągania/przypominania informacji.
-	Technika nazywana "testem zderzeniowym" przez R.Kotarskiego w jego książce "Włam się do mózgu".
-	Autor doświadczył spadku zdolności intelektualnych w wyniki zaburzenia tej równowagi.
-	(Taka teza jest w trakcie badania. Druga teza: Spadek wynika z cech autora)

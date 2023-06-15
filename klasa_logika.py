@@ -471,7 +471,7 @@ class Logika:
         konwencja trybu z dużej czyli A lub B lub C
         zwraca True jak sie udało.
         False jak nie
-        jak przydziela nowy tryb do zeruje ile_razy_wylos
+        jak przydziela nowy tryb to zeruje ile_razy_wylos
         po wykonaniu zmiany trybu aktualizaje lista_slowek/ulic
         '''
         if not na_jaki in ['A','B','C']:
