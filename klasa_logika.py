@@ -4,7 +4,11 @@ oddzielenie klasy Logika od klasy Okno
 import os as OS
 import datetime as DT
 import random as RA
-import klasa_stats as KS
+import reportlab.pdfgen.canvas as RL_CAN
+import reportlab.lib.pagesizes as RL_ROZ
+import reportlab.pdfbase.ttfonts as RL_TTF
+import reportlab.pdfbase.pdfmetrics as RL_MET
+import klasa_statystyki as KS
 import klasa_wpis_ulica_wpis_slowko as KW
 from klasa_wpis_ulica_wpis_slowko import WpisUlica as KWU
 from klasa_wpis_ulica_wpis_slowko import WpisSlowko as KWS
@@ -43,10 +47,10 @@ class Logika:
         self.plik_ulice=ust_log[0]
         self.plik_slowka=ust_log[1]
         self.lista_zadan=list()
-        self.lista_slowek=None
-        self.lista_ulic=None
+        self.lista_ulic=list()
+        self.lista_slowek=list()
         self.komunikat_bledu=''
-        self.stats=KS.Stats()
+        self.stats=KS.Statystyki()
 
         self.biezacy_tryb=ust_log[2]
         self.procent_slowek_reszta_ulic=ust_log[3]
@@ -293,7 +297,7 @@ class Logika:
         if len(self.lista_zadan)==0:
             self.zrob_liste_zadan()
 
-        return self.lista_zadan.pop()
+        return self.lista_zadan.pop()  #przypominam że pop można dać indeks
 
     def jaki_najrzadziej_ulica(self):
         '''
@@ -523,6 +527,101 @@ class Logika:
             else:
                 print()
                 #print('jest już 0')
+
+
+    def eksportuj_jako_pdf(self,dane_bazowe_lista,dane_bazowe_nazwa,plik_wynikowy_pdf):
+        '''
+        jedna funkcja do ulic i słówek.
+        są watpliwości jak zmieścić zbyt długie wpisy w pdfie.
+        narazie przycina do pewnej długości, a jak będzie lepszy pomysł to poprawie.
+        '''
+        def ilosci_do_tworzenia_pdfa():
+            ""
+            ile_wpisow_na_stronie=int((ilosci['gorny_y']-ilosci['dolny_y'])/ilosci['krok_y'])
+            ile_wpisow_jest=len(dane_bazowe_lista)
+            ilosc_stron_bedzie=0
+
+            if ile_wpisow_jest%ile_wpisow_na_stronie==0:
+                ilosc_stron_bedzie=int(ile_wpisow_jest/ile_wpisow_na_stronie)
+            else:
+                ilosc_stron_bedzie=int(ile_wpisow_jest/ile_wpisow_na_stronie)+1
+            return ile_wpisow_jest,ilosc_stron_bedzie,ile_wpisow_na_stronie
+
+        def naglowek_zrob(dane_bazowe_nazwa):
+            ""
+            plotno.setFont("DejaVuSans",25)
+            plotno.setTitle(dane_bazowe_nazwa)
+            plotno.line(30,810,500,810)
+            plotno.setFillColorRGB(0,0,255)
+            plotno.drawCentredString(290,770,'--- '+dane_bazowe_nazwa+' ---')
+            plotno.line(30,750,500,750)
+            plotno.drawInlineImage('logo.png',510,750,width=60, height=60)
+
+        def stopke_zrob(ktora_strona):
+            ""
+            plotno.setFillColorRGB(0,0,0)
+            plotno.setFont("DejaVuSans",13)
+            plotno.drawCentredString(290,30,"strona "+str(ktora_strona))
+            plotno.line(30,50,560,50)
+
+        def wstaw_wpisy_na_strone(indeks_pocz,indeks_konc):
+            ""
+            plotno.setFillColorRGB(0,0,0)
+            plotno.setFont("DejaVuSans",15)
+            ile_od_gory_wstawic=indeks_konc-indeks_pocz+1
+
+            for ktory_wpis,jaki_y in zip(range(0,ile_od_gory_wstawic),
+                range(ilosci['gorny_y'],ilosci['dolny_y'],-ilosci['krok_y'])):
+                indeks_wpisu=indeks_pocz+ktory_wpis
+
+                if jaki_typ is KW.WpisUlica:
+                    linia_do_wstawienia=str(dane_bazowe_lista[indeks_wpisu].pierwszy)
+                    plotno.drawCentredString(300,jaki_y,linia_do_wstawienia)
+                else:
+                    linia_do_wstawienia1=str(dane_bazowe_lista[indeks_wpisu].pierwszy)
+                    linia_do_wstawienia2=str(dane_bazowe_lista[indeks_wpisu].drugi)
+
+                    if len(linia_do_wstawienia1)>31:
+                        linia_do_wstawienia1=linia_do_wstawienia1[:29]+'...'
+                    if len(linia_do_wstawienia2)>31:
+                        linia_do_wstawienia2=linia_do_wstawienia2[:29]+'...'
+
+                    plotno.drawString(30,jaki_y,linia_do_wstawienia1)
+                    plotno.drawString(280,jaki_y,linia_do_wstawienia2)
+
+        #poczatek f. eksportuj_jako_pdf
+        if len(dane_bazowe_lista)==0:
+            return 'pusta lista wpisów'
+        jaki_typ=type(dane_bazowe_lista[0])
+
+        czcionka_ttf={'nazwa':'DejaVuSans','sciezka':'DejaVuSans-Bold.ttf'}
+        RL_MET.registerFont(RL_TTF.TTFont(czcionka_ttf['nazwa'],czcionka_ttf['sciezka']))
+
+        if not OS.path.exists(czcionka_ttf['sciezka']):
+            return 'brakuje pliku czcionki: '+czcionka_ttf['sciezka']
+
+        plotno=RL_CAN.Canvas(plik_wynikowy_pdf,pagesize=RL_ROZ.A4)
+        plotno.setFont(czcionka_ttf['nazwa'],15)
+
+        ilosci={'gorny_y':700,'dolny_y':50,'krok_y':40}
+        ile_wpisow_jest,ile_stron_bedzie,ile_wpisow_na_stronie=ilosci_do_tworzenia_pdfa()
+
+        for strona in range(0,ile_stron_bedzie):
+            indeks_pocz=strona*ile_wpisow_na_stronie
+            indeks_konc=(strona+1)*ile_wpisow_na_stronie-1
+            if indeks_konc>ile_wpisow_jest:
+                indeks_konc=ile_wpisow_jest-1
+
+            naglowek_zrob(dane_bazowe_nazwa)
+            wstaw_wpisy_na_strone(indeks_pocz,indeks_konc)
+            stopke_zrob(strona+1)
+            plotno.showPage()
+
+        plotno.save()
+        print('--- wygenerowałem plik: '+plik_wynikowy_pdf+' ---')
+        return True
+        #koniec f.eksportuj_jako_pdf
+
 
     #CRUD. ale kolejność od samodzielnych po zależne
     def czy_wpis_istnieje(self,jaki_wpis):

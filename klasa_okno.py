@@ -68,7 +68,7 @@ class Okno:
         "pyta czy zamknąć i zamyka"
         if TMS.askyesno(title="--uwaga--",message="Zamknąć?"):
             self.watki_zakoncz=True
-            if self.logika.komunikat_bledu=='':
+            if not self.logika.komunikat_bledu:
                 self.zapisz_ustawienia_programu()
             self.logika.zamknij()
             self.pasekstanu.zamknij()
@@ -93,8 +93,8 @@ class Okno:
         #ust_okn=[1920,600,70,23,16,'Arial',3,'data-scaner.wav',True]
         #ust_okn=[1920,560,70,23,16,'Arial',120,'kimwilde.mp3',False]
         #ust_okn=[1920,560,70,23,16,'Arial',0,'dwsample.ogg',False]
-        ust_okn=[1920,560,70,23,16,'Arial',0,'dwsample.ogg',True]
-        ust_log=['ulice.nauka','slowka.nauka','A',50]
+        ust_okn=[1920,560,70,23,16,'Arial',1200,'dwsample.ogg',True]
+        ust_log=['ulice.nauka','slowka.nauka','A',100]
         return [ust_okn,ust_log]
 
     def zapisz_ustawienia_programu(self):
@@ -217,18 +217,17 @@ class Okno:
         self.okno.bind("<KeyPress-Escape>",self.zamknij)
         self.okno.protocol("WM_DELETE_WINDOW",self.zamknij)
         self.okno.bind("<KeyPress-F1>",self.pokaz_pomoc)
-        self.okno.bind("<Control-Key-0>",self.cofnij_ilosc_wylos_biez_wpisu_ok)
+        self.okno.bind("<Control-Key-0>",self.confnij_ilosc_wylos_biez_wpisu_okno)
 
         self.okno.bind("<KeyPress-F2>",self.szukaj_wpisow_okno)
         self.okno.bind("<KeyPress-F3>",self.dodaj_wpis_okno)
         self.okno.bind("<KeyPress-F4>",self.edytuj_wpis_okno)
-        #self.okno.bind("<Control-Key-k>",self.kasuj_wpis_ok)
 
         self.okno.bind("<Control-Key-a>",lambda event:self.ustaw_tryb_biezacego_wpisu('A'))
         self.okno.bind("<Control-Key-b>",lambda event:self.ustaw_tryb_biezacego_wpisu('B'))
         self.okno.bind("<Control-Key-c>",lambda event:self.ustaw_tryb_biezacego_wpisu('C'))
         self.okno.bind("<Control-Key-t>",self.zmien_biezacy_tryb)
-        self.okno.bind("<Control-Key-u>",self.edycja_ustawien)
+        self.okno.bind("<Control-Key-p>",self.eksportuj_jako_pdf_okno)
         self.okno.bind("<Control-Key-s>",self.pokaz_wykres_statystyk)
         #też Escape
         self.okno.bind("<Control-Key-q>",self.zamknij)
@@ -238,14 +237,64 @@ class Okno:
         self.okno.bind("<Control-KP_Subtract>",lambda event:self.czcionke_zmien('-'))
         self.okno.bind("<Control-KP_Multiply>",lambda event:self.czcionke_zmien('*'))
 
+    def eksportuj_jako_pdf_okno(self,_):
+        '''
+        3 argumenty:
+            lista wpisów,
+            nazwa dla danych
+            nazwa pliku wynikowego
+
+        zwraca True jak czcionka jest i udalo sie
+        zwraca komunikat bledu jak nieposzlo
+        '''
+        def wykonaj_pdfa(ktory):
+            "jako zewnętrzna funkcja bo argumenty daje i wynik pobiera"
+            wynik=True
+
+            if ktory==plik_ulice_nazwa:
+                wynik=self.logika.eksportuj_jako_pdf(self.logika.lista_ulic,plik_ulice_podtytul,plik_ulice_nazwa)
+            elif ktory==plik_slowka_nazwa:
+                wynik=self.logika.eksportuj_jako_pdf(self.logika.lista_slowek,plik_slowka_podtytul,plik_slowka_nazwa)
+
+            if not wynik is True:
+                print('komunikat_bledu: ',wynik)
+                dlugosc_bledu=len('BŁĄD: '+wynik)
+                guzik_ulice.config(text='BŁĄD: '+wynik)
+                guzik_ulice.config(width=dlugosc_bledu)
+                guzik_slowka.config(text='BŁĄD: '+wynik)
+                guzik_slowka.config(width=dlugosc_bledu)
+
+
+        plik_ulice_nazwa='ulice.pdf'
+        plik_ulice_podtytul='ulice.nauka'
+
+        plik_slowka_nazwa='slowka.pdf'
+        plik_slowka_podtytul='slowka.nauka'
+
+        okienko=TK.Toplevel(self.okno,bg='grey')
+        okienko.title('Generowanie plików pdf')
+        okienko.rowconfigure(0,weight=1)
+        okienko.columnconfigure(0,weight=1)
+        okienko.bind("<KeyPress-Escape>",lambda event:okienko.destroy())
+        okienko.geometry('+350+300')
+        okienko.wm_iconphoto(False,TK.PhotoImage(file='logo2.png'))
+        okienko.protocol("WM_DELETE_WINDOW",lambda:okienko.destroy())
+
+        guzik_ulice=TK.Button(okienko,text='Generuj: '+plik_ulice_nazwa,width=20,
+            font=self.czcionka_middle)
+        guzik_ulice['command']=lambda co=plik_ulice_nazwa:wykonaj_pdfa(co)
+
+        guzik_slowka=TK.Button(okienko,text='Generuj: '+plik_slowka_nazwa,width=20,
+            font=self.czcionka_middle)
+        guzik_slowka['command']=lambda co=plik_slowka_nazwa:wykonaj_pdfa(co)
+
+        guzik_ulice.grid()
+        guzik_slowka.grid()
+
+
     def pokaz_wykres_statystyk(self,_):
-        "w klasie Stat jest m.zwracająca dane do wykresu"
+        "w klasie Statystyki jest m.zwracająca dane do wykresu"
         print('f.pokaz_wykres_statystyk. ')
-        def skalowanie(_):
-            pass
-            #print('skalowanie',okienko.winfo_width(),okienko.winfo_height())
-            #fig.set_figwidth(okienko.winfo_width())
-            #fig.set_figheight(okienko.winfo_height())
         print('---skalowanie wykresu do okna dorobic---')
         print('jakieś podsumowanie.np średnio dziennie=...')
 
@@ -253,7 +302,7 @@ class Okno:
         okienko.rowconfigure(0,weight=1)
         okienko.columnconfigure(0,weight=1)
         okienko.bind("<KeyPress-Escape>",lambda event:okienko.destroy())
-        okienko.bind("<Configure>",skalowanie)
+        #okienko.bind("<Configure>",skalowanie)
         okienko.geometry('+350+300')
         okienko.wm_iconphoto(False,TK.PhotoImage(file='logo2.png'))
         okienko.protocol("WM_DELETE_WINDOW",lambda event:okienko.destroy())
@@ -502,7 +551,7 @@ class Okno:
             #self.entry2.delete(0,TK.END)
             self.entry2_tresc.set('')
 
-    def cofnij_ilosc_wylos_biez_wpisu_ok(self,_):
+    def confnij_ilosc_wylos_biez_wpisu_okno(self,_):
         "czasem można chcieć powtórzyć dany wpis w najbliższym obiegu losowania"
         print('cofnij_ilosc_wylos_biez_wpisu_Ok')
         print('biezacy',self.logika.biezacy_wpis)
@@ -538,16 +587,13 @@ class Okno:
                 F3 dodawanie nowych wpisów
                 F4 edycja bieżącego wpisu
                 ctrl+a/b/c ustaw tryb bieżącego wpisu
-            ctrl+0 - cofnij ilość wylosowań bieżącego wpisu
+                ctrl+0 - cofnij ilość wylosowań bieżącego wpisu
+            ctrl+p eksportuj jako pdf ulice/słówka
+            ctrl+s pokaż statystyki
             ctrl+t zmień bieżący tryb
-            ctrl+r pokaż statystyki
             ctrl+*/+/- zerowanie/powiększanie/zmniejszanie rozmiaru czcionki
             F1 - pokaż tą pomoc
         ''')
-
-    def edycja_ustawien(self,_):
-        "jak dopieszę więcej funkcji to zrobie wtedy ustawienia jakieś"
-        print('edycja_ustawien')
 
     @staticmethod
     def czcionke_zmien(jaka_operacja):

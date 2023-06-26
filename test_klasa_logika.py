@@ -131,9 +131,7 @@ class TestKlasaLogika(UT.TestCase):
 
         #nowy plik ulice z błędem: brak liczby na końcu
         self.logika.plik_ulice='test_ulice4.nauka'
-        print('111')
         wynik4=self.logika.wczytaj_ulice()
-        print('222')
         self.assertFalse(wynik4)
         self.assertTrue(self.logika.komunikat_bledu=='str->WpisUlica nieudany')
         #wyzerowanie komunikatu błędu
@@ -768,6 +766,65 @@ class TestKlasaLogika(UT.TestCase):
             self.assertEqual(wieksze,mniejsze)
         else:
             self.assertEqual(mniejsze+1,wieksze)
+
+
+    def test_eksportuj_jako_pdf_ulice(self):
+        '''
+        jest jedna funkcje do ulic i słówek ale dla czytelności dwie testowe
+        sprawdza:
+            zwraca True jak jest plik czcionki i utworzyl pdfa
+            zwraca komunikat_bledu jak nieudalo sie albo brakuje pliku czcionki
+            jak liste wpisów pusta też komunikat błędu
+            czy są niepuste pliki pdf
+        '''
+        pliki_ulic_do_testow=['ulice0.nauka','ulice12.nauka','ulice16.nauka','ulice17.nauka','ulice34.nauka']
+        plik_ulice_pdf='ulice_test1.pdf'
+
+
+        logika=KL.Logika([pliki_ulic_do_testow[0],'slowka.nauka','A',100])
+        #nazwa_pdfa=ktory_plik_ulic[:-5]+'pdf'
+        #print('nazwa_pdfa',nazwa_pdfa)
+        wynik1=logika.eksportuj_jako_pdf(logika.lista_ulic,pliki_ulic_do_testow[0],plik_ulice_pdf)
+        self.assertIsInstance(wynik1,str)
+        self.assertFalse(wynik1=='')
+
+        for ktory_plik_ulic in pliki_ulic_do_testow[1:]:
+            #print('ktory_plik_ulic',ktory_plik_ulic)
+            logika=KL.Logika([ktory_plik_ulic,'slowka.nauka','A',100])
+
+            nazwa_pdfa=ktory_plik_ulic[:-5]+'pdf'
+            wynik=logika.eksportuj_jako_pdf(logika.lista_ulic,ktory_plik_ulic,plik_ulice_pdf)
+            self.assertIsInstance(wynik1,str)
+            self.assertFalse(wynik1=='')
+
+
+    def test_eksportuj_jako_pdf_slowka(self):
+        '''
+        jest jedna funkcje do ulic i słówek ale dla czytelności dwie testowe
+        sprawdza:
+            zwraca True jak jest plik czcionki i utworzyl pdfa
+            zwraca komunikat_bledu jak nieudalo sie albo brakuje pliku czcionki
+            jak liste wpisów pusta też komunikat błędu
+            czy są niepuste pliki pdf
+        '''
+
+        pliki_slowka_do_testow=['slowka0.nauka','slowka7.nauka','slowka16.nauka','slowka17.nauka','slowka34.nauka']
+        plik_slowka_pdf='slowka_test1.pdf'
+
+        logika=KL.Logika(['ulice.nauka',pliki_slowka_do_testow[0],'A',100])
+        wynik1=logika.eksportuj_jako_pdf(logika.lista_slowek,pliki_slowka_do_testow[0],plik_slowka_pdf)
+        self.assertIsInstance(wynik1,str)
+        self.assertFalse(wynik1=='')
+
+        for ktory_plik_slowek in pliki_slowka_do_testow[1:]:
+            #print('ktory_plik_slowek',ktory_plik_slowek)
+            logika=KL.Logika(['ulice.nauka',ktory_plik_slowek,'A',100])
+
+            wynik=logika.eksportuj_jako_pdf(logika.lista_slowek,ktory_plik_slowek,plik_slowka_pdf)
+            self.assertIsInstance(wynik1,str)
+            self.assertFalse(wynik1=='')
+
+
 
     #najpierw samodzielne funkcje edytujace
     def test_czy_wpis_istnieje_slowko(self):
