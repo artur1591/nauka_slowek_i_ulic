@@ -5,7 +5,7 @@ zapisuje je w pliku określonym w self.jaki_plik
 import datetime as DT
 import os as OS
 
-class Stats:
+class Statystyki:
     "wymaga refaktoryzacji ale poczekam na lepsze określenie wymagań wobec niej"
     def __init__(self):
         ""
@@ -15,12 +15,12 @@ class Stats:
 
     def kolejna_ulica(self):
         "inkrementacja dziennej ilości wylosowanych ulic"
-        #print('Stats.kolejna_ulica')
+        #print('Statystyki.kolejna_ulica')
         self.biezace_statystyki_trojca[-1][1]+=1
 
     def kolejne_slowko(self):
         "inkrementacja dziennej ilości wylosowanych słówek"
-        #print('Stats.kolejne_slowko')
+        #print('Statystyki.kolejne_slowko')
         self.biezace_statystyki_trojca[-1][2]+=1
 
     @staticmethod
@@ -59,7 +59,7 @@ class Stats:
         '''
         wypełnia self.biezace_statystyki_trojca która jest zawsze aktualne
         '''
-        print('f.wczytaj statystyki')
+        #print('f.wczytaj statystyki')
         if not OS.path.exists(self.jaki_plik) or OS.stat(self.jaki_plik).st_size==0:
             print('---brak pliku lub pusty plik:',self.jaki_plik,'---')
             self.biezace_statystyki_trojca.append([self._daj_date_(),0,0])
@@ -87,10 +87,10 @@ class Stats:
         #print('data z ost.linii:',data_z_ost_linii,'_')
         #print('__daj_date__()  :',data_dzisiejsza,'_')
         if data_z_ost_linii==data_dzisiejsza:
-            print('---było dzisiaj już---')
+            #print('---było dzisiaj już---')
             self.bylo_dzisiaj=True
         else:
-            print('---pierwszy raz dzisiaj grasz---')
+            #print('---pierwszy raz dzisiaj grasz---')
             self.biezace_statystyki_trojca.append([self._daj_date_(),0,0])
 
         return True

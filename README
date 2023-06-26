@@ -1,11 +1,10 @@
 Co robi program?
-	Program losuje słówka i/lub ulice w celu treningu.
+	Program losuje słówka i/lub ulice w celu treningu głowy.
 	Spośród najrzadziej wylosowanych losowane są kolejne.
-	Kolejność pokazywania to zmieszana lista określonej ilości ulic i słówek.
-	Klawisz Spacja to podstawowy klawisz programu.
+	Klawisz Spacja pokazuje następny wpis lub tłumaczenie (podstawowy klawisz programu).
 
 Uruchomienie programu:
-	./main.py (prawa uruchamiania nadać) lub python main.py
+	./main.py (prawa uruchamiania trzeba nadać) lub python main.py
 	opcjonalny argument: liczba od 0 do 100 oznacza procent_slowek_reszta_ulic
 		czyli 100 oznacza tylko slowka a 0 oznacza tylko ulice
 
@@ -22,6 +21,7 @@ Obsługa:
 		ctrl+0 - cofnij ilość wylosowań bieżącego wpisu
 		ctrl+t zmień bieżący tryb
 		ctrl+s pokaż statystyki
+		ctrl+p eksportuj jako pdf ulice/słówka
 		ctrl+*/+/- zerowanie/powiększanie/zmniejszanie rozmiaru czcionki
 		F1 - pokaż tą pomoc
 
