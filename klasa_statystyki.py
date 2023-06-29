@@ -3,13 +3,19 @@ obsługuje statystyki związane z dzienną ilością ćwiczonych słówek i uli
 zapisuje je w pliku określonym w self.jaki_plik
 '''
 import datetime as DT
+import statistics as ST
 import os as OS
 
 class Statystyki:
     "wymaga refaktoryzacji ale poczekam na lepsze określenie wymagań wobec niej"
     def __init__(self):
         ""
+        '''pliki=['statystyki0.nauka','statystyki1.nauka',
+        'statystyki6.nauka','statystyki9.nauka',
+        'statystyki17.nauka'] #indeks 0-4
+        self.jaki_plik=pliki[4]'''
         self.jaki_plik='statystyki.nauka'
+        #print('jaki_plik=',self.jaki_plik)
         self.biezace_statystyki_trojca=[]
         self.bylo_dzisiaj=False
 
@@ -54,6 +60,37 @@ class Statystyki:
         nowa_linia+=str(ile_u).rjust(3,'0')+' S '
         nowa_linia+=str(ile_s).rjust(3,'0')+'\n'
         return nowa_linia
+
+    def podsumowanie(self):
+        '''jakiś rodzaj statystyk np.
+            ile średnio,min,max,moda ulic i słówek
+        do prezentacji obok wykresu
+        '''
+        poj=self.biezace_statystyki_trojca
+
+        minimalna_dzienna_u=min(poj,key=lambda poj:poj[1])
+        minimalna_dzienna_s=min(poj,key=lambda poj:poj[2])
+        maksymalna_dzienna_u=max(poj,key=lambda poj:poj[1])
+        maksymalna_dzienna_s=max(poj,key=lambda poj:poj[2])
+
+        wszystkie_u=[a[1] for a in poj]
+        wszystkie_s=[a[2] for a in poj]
+        srednia_dzienna_u=int(ST.mean(wszystkie_u))
+        srednia_dzienna_s=int(ST.mean(wszystkie_s))
+        moda_u=ST.mode(wszystkie_u)
+        moda_s=ST.mode(wszystkie_s)
+
+        informacje=' ULIC: średnio dziennie='+str(srednia_dzienna_u)
+        informacje+=' dzienne min='+str(minimalna_dzienna_u[1])
+        informacje+=' max='+str(maksymalna_dzienna_u[1])
+        informacje+=' moda='+str(moda_u)+'\n'
+
+        informacje+=' SŁÓWKA: średnio dziennie='+str(srednia_dzienna_s)
+        informacje+=' dzienne min='+str(minimalna_dzienna_s[2])
+        informacje+=' max='+str(maksymalna_dzienna_s[2])
+        informacje+=' moda='+str(moda_s)
+
+        return informacje
 
     def wczytaj(self):
         '''

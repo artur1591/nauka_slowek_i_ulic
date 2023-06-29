@@ -2,7 +2,6 @@
 '''
 oddzielenie klasy Okno od klasy Logika
 '''
-import sys
 import enum as EN
 import os as OS
 import threading as TH
@@ -94,7 +93,7 @@ class Okno:
         #ust_okn=[1920,560,70,23,16,'Arial',120,'kimwilde.mp3',False]
         #ust_okn=[1920,560,70,23,16,'Arial',0,'dwsample.ogg',False]
         ust_okn=[1920,560,70,23,16,'Arial',1200,'dwsample.ogg',True]
-        ust_log=['ulice.nauka','slowka.nauka','A',100]
+        ust_log=['ulice.nauka','slowka.nauka','A',50]
         return [ust_okn,ust_log]
 
     def zapisz_ustawienia_programu(self):
@@ -252,9 +251,11 @@ class Okno:
             wynik=True
 
             if ktory==plik_ulice_nazwa:
-                wynik=self.logika.eksportuj_jako_pdf(self.logika.lista_ulic,plik_ulice_podtytul,plik_ulice_nazwa)
+                wynik=self.logika.eksportuj_jako_pdf(self.logika.lista_ulic,
+                                    plik_ulice_podtytul,plik_ulice_nazwa)
             elif ktory==plik_slowka_nazwa:
-                wynik=self.logika.eksportuj_jako_pdf(self.logika.lista_slowek,plik_slowka_podtytul,plik_slowka_nazwa)
+                wynik=self.logika.eksportuj_jako_pdf(self.logika.lista_slowek,
+                                    plik_slowka_podtytul,plik_slowka_nazwa)
 
             if not wynik is True:
                 print('komunikat_bledu: ',wynik)
@@ -294,41 +295,66 @@ class Okno:
 
     def pokaz_wykres_statystyk(self,_):
         "w klasie Statystyki jest m.zwracająca dane do wykresu"
-        print('f.pokaz_wykres_statystyk. ')
-        print('---skalowanie wykresu do okna dorobic---')
-        print('jakieś podsumowanie.np średnio dziennie=...')
 
-        okienko=TK.Toplevel(self.okno,bg='grey')
+        def przygotuj_dane_dla_wykresy():
+            ""
+            daty_wej=list()
+            ilosci_wej_u=list()
+            ilosci_wej_s=list()
+            ile_dat_bedzie=len(self.logika.stats.biezace_statystyki_trojca)
+
+            for trojca in self.logika.stats.biezace_statystyki_trojca:
+                ilosci_wej_u.append(trojca[1])
+                ilosci_wej_s.append(trojca[2])
+                if ile_dat_bedzie>=12:
+                    daty_wej.append(trojca[0][8:])
+                elif ile_dat_bedzie>6 and ile_dat_bedzie<12:
+                    daty_wej.append(trojca[0][5:])
+                else:
+                    #jak do 6sztuk to cały format daty
+                    daty_wej.append(trojca[0])
+
+            return daty_wej,ilosci_wej_u,ilosci_wej_s
+
+        wspolny_kolor_tla='seagreen'
+        okienko=TK.Toplevel(self.okno,bg=wspolny_kolor_tla)
         okienko.rowconfigure(0,weight=1)
         okienko.columnconfigure(0,weight=1)
+        okienko.rowconfigure(1,weight=1)
+        okienko.columnconfigure(1,weight=1)
+        okienko.rowconfigure(2,weight=1)
+        okienko.columnconfigure(2,weight=1)
         okienko.bind("<KeyPress-Escape>",lambda event:okienko.destroy())
-        #okienko.bind("<Configure>",skalowanie)
-        okienko.geometry('+350+300')
+        okienko.geometry('740x672+350+300')
+        ile_dni=len(self.logika.stats.biezace_statystyki_trojca)
+        okienko.title('ile dni na wykresie: '+str(ile_dni))
         okienko.wm_iconphoto(False,TK.PhotoImage(file='logo2.png'))
-        okienko.protocol("WM_DELETE_WINDOW",lambda event:okienko.destroy())
+        okienko.protocol("WM_DELETE_WINDOW",okienko.destroy)
 
-        PPL.autoscale(tight=True)
+        napis_tresc=self.logika.stats.podsumowanie()
+        #print('napis_tresc',napis_tresc)
+
+        napis=TK.Label(okienko,font=self.czcionka_small,text=napis_tresc,bg=wspolny_kolor_tla)
+        napis.pack()
+
         PPL.figure(edgecolor='red')
 
         fig,osie=PPL.subplots()
-        fig.patch.set_facecolor('seagreen')
+        fig.patch.set_facecolor(wspolny_kolor_tla)
+
+        fig.text(0.55,0.35,'Nauka Słówek',fontsize=65,color='white',ha='center',alpha=0.25,rotation=25)
+
         plotno=MTLB.FigureCanvasTkAgg(fig,master=okienko)
-        plotno.get_tk_widget().grid(row=0,columnspan=2)
+        plotno.get_tk_widget().pack(side="top",fill="both",expand=True)
 
         toolbar=MTLB.NavigationToolbar2Tk(plotno,okienko,pack_toolbar=False)
         toolbar.update()
-        toolbar.grid(row=1,column=0)
+        toolbar.pack(side='left')
 
         guzik=TK.Button(okienko,text="Zamknij (lub klawisz Escape)",command=okienko.destroy)
-        guzik.grid(row=1,column=1)
+        guzik.pack(side='right')
 
-        daty_wej=list()
-        ilosci_wej_u=list()
-        ilosci_wej_s=list()
-        for trojca in self.logika.stats.biezace_statystyki_trojca:
-            daty_wej.append(trojca[0])
-            ilosci_wej_u.append(trojca[1])
-            ilosci_wej_s.append(trojca[2])
+        daty_wej,ilosci_wej_u,ilosci_wej_s=przygotuj_dane_dla_wykresy()
 
         osie.plot(daty_wej,ilosci_wej_u,'-',marker='D',color='black',lw=3)
         osie.plot(daty_wej,ilosci_wej_s,'-',marker='H',color='green',lw=3)
@@ -336,8 +362,6 @@ class Okno:
         osie.set_ylabel('Ilości dzienne')
         osie.legend(['Ulice','Słówka'])
         osie.set_facecolor('grey')
-        #print('margin',osie.margins())
-        plotno.draw()
 
 
     def aktualizuj_napis_ilosc_wpisow(self):
