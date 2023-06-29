@@ -395,7 +395,8 @@ class TestKlasaLogika(UT.TestCase):
 
                 ile_slowek_znalazl=self.logika.lista_zadan.count('s1')
                 ile_slowek_powinno_byc=int(rozm_listy_zadan*procent_slowek/100)
-                #print('ile_slowek_znalazl',ile_slowek_znalazl,'ile_slowek_powinno_byc',ile_slowek_powinno_byc)
+                #print('ile_slowek_znalazl',ile_slowek_znalazl,
+                #'ile_slowek_powinno_byc',ile_slowek_powinno_byc)
                 self.assertEqual(ile_slowek_znalazl,ile_slowek_powinno_byc)
 
                 ile_ulic_znalazl=self.logika.lista_zadan.count('u')
@@ -778,25 +779,18 @@ class TestKlasaLogika(UT.TestCase):
             czy są niepuste pliki pdf
         '''
         pliki_ulic_do_testow=['ulice0.nauka','ulice12.nauka','ulice16.nauka','ulice17.nauka','ulice34.nauka']
-        plik_ulice_pdf='ulice_test1.pdf'
-
-
-        logika=KL.Logika([pliki_ulic_do_testow[0],'slowka.nauka','A',100])
-        #nazwa_pdfa=ktory_plik_ulic[:-5]+'pdf'
-        #print('nazwa_pdfa',nazwa_pdfa)
-        wynik1=logika.eksportuj_jako_pdf(logika.lista_ulic,pliki_ulic_do_testow[0],plik_ulice_pdf)
-        self.assertIsInstance(wynik1,str)
-        self.assertFalse(wynik1=='')
 
         for ktory_plik_ulic in pliki_ulic_do_testow[1:]:
             #print('ktory_plik_ulic',ktory_plik_ulic)
             logika=KL.Logika([ktory_plik_ulic,'slowka.nauka','A',100])
-
             nazwa_pdfa=ktory_plik_ulic[:-5]+'pdf'
-            wynik=logika.eksportuj_jako_pdf(logika.lista_ulic,ktory_plik_ulic,plik_ulice_pdf)
-            self.assertIsInstance(wynik1,str)
-            self.assertFalse(wynik1=='')
-
+            #print('nazwa_pdfa',nazwa_pdfa)
+            wynik=logika.eksportuj_jako_pdf(logika.lista_ulic,ktory_plik_ulic,nazwa_pdfa)
+            if ktory_plik_ulic==pliki_ulic_do_testow[0]:
+                self.assertIsInstance(wynik,str)
+                self.assertFalse(wynik=='')
+            else:
+                self.assertTrue(wynik)
 
     def test_eksportuj_jako_pdf_slowka(self):
         '''
@@ -808,22 +802,20 @@ class TestKlasaLogika(UT.TestCase):
             czy są niepuste pliki pdf
         '''
 
-        pliki_slowka_do_testow=['slowka0.nauka','slowka7.nauka','slowka16.nauka','slowka17.nauka','slowka34.nauka']
-        plik_slowka_pdf='slowka_test1.pdf'
+        pliki_slowka_do_testow=['slowka0.nauka','slowka7.nauka','slowka16.nauka',
+                                'slowka17.nauka','slowka34.nauka','slowka144.nauka']
 
-        logika=KL.Logika(['ulice.nauka',pliki_slowka_do_testow[0],'A',100])
-        wynik1=logika.eksportuj_jako_pdf(logika.lista_slowek,pliki_slowka_do_testow[0],plik_slowka_pdf)
-        self.assertIsInstance(wynik1,str)
-        self.assertFalse(wynik1=='')
-
-        for ktory_plik_slowek in pliki_slowka_do_testow[1:]:
+        for ktory_plik_slowek in pliki_slowka_do_testow:
             #print('ktory_plik_slowek',ktory_plik_slowek)
             logika=KL.Logika(['ulice.nauka',ktory_plik_slowek,'A',100])
-
-            wynik=logika.eksportuj_jako_pdf(logika.lista_slowek,ktory_plik_slowek,plik_slowka_pdf)
-            self.assertIsInstance(wynik1,str)
-            self.assertFalse(wynik1=='')
-
+            nazwa_pdfa=ktory_plik_slowek[:-5]+'pdf'
+            #print('nazwa_pdfa',nazwa_pdfa)
+            wynik=logika.eksportuj_jako_pdf(logika.lista_slowek,ktory_plik_slowek,nazwa_pdfa)
+            if ktory_plik_slowek==pliki_slowka_do_testow[0]:
+                self.assertIsInstance(wynik,str)
+                self.assertFalse(wynik=='')
+            else:
+                self.assertTrue(wynik)
 
 
     #najpierw samodzielne funkcje edytujace
