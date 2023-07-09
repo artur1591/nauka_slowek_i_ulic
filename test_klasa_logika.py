@@ -13,7 +13,7 @@ class TestKlasaLogika(UT.TestCase):
     ""
     def setUp(self):
         ""
-        ust_log=['test_ulice.nauka','test_slowka.nauka','A',50]
+        ust_log=['test_ulice.nauka','test_slowka.nauka','A',50,'dopiski_ulice','dopiski_slowka']
         self.logika=KL.Logika(ust_log)
 
         self.wpis_zmyslonyS=KW.WpisSlowko("pankracy is a brick","pankracy to równy gość")
@@ -35,13 +35,13 @@ class TestKlasaLogika(UT.TestCase):
         "błędne argumenty klasy Logika powinny zgłosić wyjątek z dekoratora"
         with self.assertRaises(ValueError):
             #ust_1=['test_slowka.nauka','test_ulice.nauka','A',111]
-            ust_1=['test_ulice.nauka','test_slowka.nauka','A',111]
+            ust_1=['test_ulice.nauka','test_slowka.nauka','A',111,'dopiski_ulice','dopiski_slowka']
             self.logika=KL.Logika(ust_1)
-            ust_2=['test_slowka.nauka','','A',111]
+            ust_2=['test_slowka.nauka','','A',111,'dopiski_ulice','dopiski_slowka']
             self.logika=KL.Logika(ust_2)
-            ust_3=['','','A',111]
+            ust_3=['','','A',111,'dopiski_ulice','dopiski_slowka']
             self.logika=KL.Logika(ust_3)
-            ust_4=['djdjd','fijrie','r',111]
+            ust_4=['djdjd','fijrie','r',111,'dopiski_ulice','dopiski_slowka']
             self.logika=KL.Logika(ust_4)
             ust_5=[]
             self.logika=KL.Logika(ust_5)
@@ -242,6 +242,15 @@ class TestKlasaLogika(UT.TestCase):
         jaki_plik=self.logika.plik_slowka
         rozmiar_pliku=OS.stat(jaki_plik).st_size
         self.assertNotEqual(rozmiar_pliku,0)
+
+    def test_fun_dopiski(self):
+        ""
+        print('dopisac tu coś')
+
+    def test_jezyk_slowa(self):
+        ""
+        print('dopisac tu coś')
+
 
     def test_zeruj_tryb_ulic(self):
         "test zeruj_tryb_ulic"
@@ -782,7 +791,7 @@ class TestKlasaLogika(UT.TestCase):
 
         for ktory_plik_ulic in pliki_ulic_do_testow[1:]:
             #print('ktory_plik_ulic',ktory_plik_ulic)
-            logika=KL.Logika([ktory_plik_ulic,'slowka.nauka','A',100])
+            logika=KL.Logika([ktory_plik_ulic,'slowka.nauka','A',100,'dopiski_ulice','dopiski_slowka'])
             nazwa_pdfa=ktory_plik_ulic[:-5]+'pdf'
             #print('nazwa_pdfa',nazwa_pdfa)
             wynik=logika.eksportuj_jako_pdf(logika.lista_ulic,ktory_plik_ulic,nazwa_pdfa)
@@ -807,7 +816,7 @@ class TestKlasaLogika(UT.TestCase):
 
         for ktory_plik_slowek in pliki_slowka_do_testow:
             #print('ktory_plik_slowek',ktory_plik_slowek)
-            logika=KL.Logika(['ulice.nauka',ktory_plik_slowek,'A',100])
+            logika=KL.Logika(['ulice.nauka',ktory_plik_slowek,'A',100,'dopiski_ulice','dopiski_slowka'])
             nazwa_pdfa=ktory_plik_slowek[:-5]+'pdf'
             #print('nazwa_pdfa',nazwa_pdfa)
             wynik=logika.eksportuj_jako_pdf(logika.lista_slowek,ktory_plik_slowek,nazwa_pdfa)

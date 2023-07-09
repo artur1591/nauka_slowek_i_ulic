@@ -3,7 +3,14 @@ oddzielenie klasy Logika od klasy Okno
 '''
 import os as OS
 import datetime as DT
+import threading as TH
 import random as RA
+import re as RE
+import enum as EN
+import nltk.corpus as NL_CO
+import polyglot.detect as POL_DET
+import polyglot.detect.base as POL_BAS
+POL_BAS.logger.setLevel("ERROR")
 import reportlab.pdfgen.canvas as RL_CAN
 import reportlab.lib.pagesizes as RL_ROZ
 import reportlab.pdfbase.ttfonts as RL_TTF
@@ -13,11 +20,15 @@ import klasa_wpis_ulica_wpis_slowko as KW
 from klasa_wpis_ulica_wpis_slowko import WpisUlica as KWU
 from klasa_wpis_ulica_wpis_slowko import WpisSlowko as KWS
 
+dopiski_status=EN.Enum('dopiski_status',['WCZYTALEM_W_LISTE_DOPISKI',
+                                        'WYKRYWAM_JEZYK','JEZYK_WYKRYTY',
+                                        'DOPISALEM_DO_LISTY_WPISOW','UKRYJ_LABEL'])
+
 def sprawdzanie_param_inita(func):
     "jakiś dekorator chciałem dać"
     def wewn(*arg):
         #print('arg[1]',arg[1])
-        if not len(arg[1])==4:
+        if not len(arg[1])==6:
             raise ValueError('zły zestaw arg wejsciowych klasy Logika.jest',arg)
 
         if arg[1][0]=='':
@@ -28,6 +39,10 @@ def sprawdzanie_param_inita(func):
             raise ValueError('tryb powinien byc A/B/C. jest',arg[1][2])
         if int(arg[1][3])<0 or int(arg[1][3])>100:
             raise ValueError('procent powinien byc 0-100',int(arg[1][3]))
+        if arg[1][4]=='':
+            raise ValueError('plik_dopiski_ulice pusty')
+        if arg[1][5]=='':
+            raise ValueError('plik_dopiski_slowka pusty')
 
         func(*arg)
     return wewn
@@ -40,6 +55,28 @@ class Logika:
     zerowany:
         zrob_liste_zadan,
     '''
+    class Dopiski:
+        ""
+        def __init__(self,plik_ulice,plik_slowka):
+            ""
+            self.ob_kl_lo=None
+            self.ulice_lista=list()
+            self.ulice_plik=plik_ulice
+            self.ulice_status=dopiski_status.UKRYJ_LABEL
+            self.slowka_lista=list()
+            self.slowka_plik=plik_slowka
+            self.slowka_status=dopiski_status.UKRYJ_LABEL
+            self.zakoncz_watki=False
+            #print('init klasy Dopiski(',plik_ulice,',',plik_slowka,')',sep='')
+
+        def ustaw(self,ob_kl_lo):
+            self.ob_kl_lo=ob_kl_lo
+            self.ob_kl_lo.fun_dopiski()
+
+        def zamknij(self):
+            self.zakoncz_watki=True
+            #print('zamykanie klasy Dopiski')
+
     @sprawdzanie_param_inita
     def __init__(self,ust_log):
         "potrzebuje argumentów początkowych"
@@ -51,6 +88,9 @@ class Logika:
         self.lista_slowek=list()
         self.komunikat_bledu=''
         self.stats=KS.Statystyki()
+        self.plik_dopiski_ulice=ust_log[4]
+        self.plik_dopiski_slowka=ust_log[5]
+        self.dopiski=self.Dopiski(self.plik_dopiski_ulice,self.plik_dopiski_slowka)
 
         self.biezacy_tryb=ust_log[2]
         self.procent_slowek_reszta_ulic=ust_log[3]
@@ -62,15 +102,18 @@ class Logika:
         self.wczytaj_ulice()
         self.wczytaj_slowka()
         self.stats.wczytaj()
+        self.dopiski.ustaw(self)
         if not self.komunikat_bledu:
             self.ustaw_biezacy_tryb(self.biezacy_tryb)
 
     def zamknij(self):
         "taki __del__"
+        print('zamknij logika')
         if not self.komunikat_bledu:
             self.zapisz_ulice()
             self.zapisz_slowka()
             self.stats.zapisz()
+            self.dopiski.zamknij()
             print('---czyste zamknięcie programu---')
         else:
             print('niezapisuje ulic,słówek bo błąd:',self.komunikat_bledu)
@@ -223,6 +266,126 @@ class Logika:
                 plik.write(str(wpis)+'\n')
 
         return True
+
+    def fun_dopiski(self):
+        ""
+        #print('f.fun_dopiski')
+        def zwroc_plik_w_liscie(nazwa_pliku):
+            "wczytuj wszystko jak leci"
+            #print('f.zwroc_plik_w_liscie',nazwa_pliku)
+            caly_plik=list()
+            gotowy=list()
+
+            with open(nazwa_pliku,mode='r',encoding='UTF-8') as plik:
+                caly_plik=plik.readlines()
+
+            #print('---caly_plik(',nazwa_pliku,'):',caly_plik)
+            for slowo in caly_plik:
+                slowo=slowo.rstrip()
+                if slowo:
+                    #print('slowo=',slowo)
+                    if slowo.isdigit():
+                        print('---wykryłem liczbę',slowo,'więc pomijam.')
+                    else:
+                        gotowy.append(slowo)
+
+            print('---gotowy(',nazwa_pliku,'):',gotowy)
+            return gotowy
+
+        def wykrywanie_jezyka_slowek_watek():
+            #print('tlumacze...')
+            self.dopiski.slowka_status=dopiski_status.WYKRYWAM_JEZYK
+            self.dopiski.slowka_lista=[self.jezyk_slowa(slowo) for slowo in self.dopiski.slowka_lista]
+            print('---po',self.dopiski.slowka_lista)
+            self.dopiski.slowka_status=dopiski_status.JEZYK_WYKRYTY
+
+        ilu_plikow_brakuje=0
+
+        if OS.path.exists(self.dopiski.ulice_plik):
+            #print('---jest plik',self.dopiski.ulice_plik)
+            if OS.stat(self.dopiski.ulice_plik).st_size>0:
+                #print('--- plik',self.dopiski.ulice_plik,'niepusty')
+                self.dopiski.ulice_lista=zwroc_plik_w_liscie(self.dopiski.ulice_plik)
+                self.dopiski.ulice_status=dopiski_status.WCZYTALEM_W_LISTE_DOPISKI
+            else:
+                ilu_plikow_brakuje+=1
+        else:
+            ilu_plikow_brakuje+=1
+
+        if OS.path.exists(self.dopiski.slowka_plik):
+            #print('---jest plik',self.dopiski.slowka_plik)
+            if OS.stat(self.dopiski.slowka_plik).st_size>0:
+                #print('--- plik',self.dopiski.slowka_plik,'niepusty')
+                self.dopiski.slowka_lista=zwroc_plik_w_liscie(self.dopiski.slowka_plik)
+                self.dopiski.slowka_status=dopiski_status.WCZYTALEM_W_LISTE_DOPISKI
+                #watek=TH.Thread(target=wykrywanie_jezyka_slowek_watek,daemon=True).start()
+                TH.Thread(target=wykrywanie_jezyka_slowek_watek,daemon=True).start()
+            else:
+                ilu_plikow_brakuje+=1
+        else:
+            ilu_plikow_brakuje+=1
+
+        #print('ilu_plikow_brakuje=',ilu_plikow_brakuje)
+        if ilu_plikow_brakuje==2:
+            self.dopiski.zakoncz_watki=True
+        #print('dopiski.zakoncz_watki=',self.dopiski.zakoncz_watki)
+
+    def jezyk_slowa(self,slowo):
+        '''
+        celem jest orzeczenie czy polskie czy angielskie,
+        może sobie nieradzić więc w razie czego orzeka na polskie
+        '''
+        class Watek(TH.Thread):
+            ""
+            def __init__(self,slowo):
+                ""
+                TH.Thread.__init__(self,daemon=True)
+                self.slowo=slowo
+                self.value=''
+            def czy_zawiera_polskie_znaki(self):
+                "zwraca True lub False"
+                wzor=RE.compile('[ąćęłńóżźĄĆĘŁŃÓŻŹ]')
+                wynik=wzor.search(self.slowo)
+                if wynik is None:
+                    return False
+                return True
+            def czy_to_ang_slowo(self):
+                "zwraca True lub False"
+                wordnet=NL_CO.wordnet
+                if wordnet.synsets(self.slowo):
+                    return True
+                return False
+            def polyglotem_jezyk(self):
+                "zwraca en lub pl"
+                for lang in POL_DET.Detector(self.slowo).languages:
+                    if not lang.code in ['en','pl']:
+                        #print('Detector->niewłaściwe: słowo',slowo)
+                        #print('POL->',slowo,lang.code)
+                        pass
+                    return lang.code
+
+            def jezyk_wykryj(self):
+                "powinna zwrócić en lub pl. sprawdzić czy daje radę zawsze"
+                #print('sprawdzam slowo=',self.slowo)
+                if self.czy_zawiera_polskie_znaki():
+                    #print('zawiera_polskie_znaki')
+                    return 'pl'
+                if self.czy_to_ang_slowo():
+                    #print('ANG slowo')
+                    return 'en'
+                return self.polyglotem_jezyk()
+
+            def run(self):
+                ""
+                if self.slowo:
+                    self.value=self.jezyk_wykryj()
+                else:
+                    self.value=False
+
+        wat=Watek(slowo)
+        wat.start()
+        wat.join()
+        return [wat.value,slowo]
 
     def czy_sa_ulice_w_trybie(self):
         '''
