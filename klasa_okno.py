@@ -2,7 +2,6 @@
 '''
 oddzielenie klasy Okno od klasy Logika
 '''
-import enum as EN
 import os as OS
 import threading as TH
 import time as TI
@@ -52,16 +51,21 @@ class Okno:
 
         self.okno.mainloop()
 
-    @staticmethod
-    def komunikaty_poczatkowe():
+
+    def komunikaty_poczatkowe(self):
         "czasem coś chce się powiedzieć na początku programu"
         print('---Aby zobaczyć listę skrótów klawiszowych naciśnij F1---')
         #print('import Pmw sprawdzić widżety')
 
-    @staticmethod
-    def komunikaty_koncowe():
+    def komunikaty_koncowe(self):
         "czasem coś chce się powiedzieć na końcu programu"
         #print('...koniec programu nauka_slowek_i_ulic')
+
+        if not self.logika.dopiski.ulice_status==KL.dopiski_status.UKRYJ_LABEL:
+            print('---są ulice do dopisania. sprawdź plik:',self.logika.dopiski.ulice_plik)
+        if not self.logika.dopiski.slowka_status==KL.dopiski_status.UKRYJ_LABEL:
+            print('---są słówka do dopisania. sprawdź plik:',self.logika.dopiski.slowka_plik)
+
 
     def zamknij(self,_=None):
         "pyta czy zamknąć i zamyka"
@@ -93,7 +97,7 @@ class Okno:
         #ust_okn=[1920,560,70,23,16,'Arial',120,'kimwilde.mp3',False]
         #ust_okn=[1920,560,70,23,16,'Arial',0,'dwsample.ogg',False]
         ust_okn=[1920,560,70,23,16,'Arial',1200,'dwsample.ogg',True]
-        ust_log=['ulice.nauka','slowka.nauka','A',50]
+        ust_log=['ulice.nauka','slowka.nauka','A',50,'dopiski_ulice','dopiski_slowka']
         return [ust_okn,ust_log]
 
     def zapisz_ustawienia_programu(self):
@@ -170,6 +174,30 @@ class Okno:
         self.okno.rowconfigure(4,weight=2)
         self.okno.columnconfigure(0,weight=1)
 
+        self.dopiski_ulice_sa=TK.Label(font=self.czcionka_small,bg='red')
+        self.dopiski_ulice_sa.grid(row=0,sticky='NW',ipady=0,ipadx=0,pady=0,padx=0)
+        if len(self.logika.dopiski.ulice_lista)==0:
+            self.dopiski_ulice_sa.grid_forget()
+        self.dopiski_ulice_sa.bind("<Button-1>",self.klikniety_dopiski_ulice)
+
+        najechany_u=lambda e:self.dopiski_ulice_sa.config(bg='white',
+                        text='---kliknij aby dopisać---')
+        opuszczanie_u=lambda e:self.dopiski_ulice_sa.config(bg='red')
+        self.dopiski_ulice_sa.bind("<Enter>",func=najechany_u)
+        self.dopiski_ulice_sa.bind("<Leave>",func=opuszczanie_u)
+
+        self.dopiski_slowka_sa=TK.Label(font=self.czcionka_small,bg='red')
+        self.dopiski_slowka_sa.grid(row=1,sticky='NW',ipady=0,ipadx=0,pady=0,padx=0)
+        if len(self.logika.dopiski.slowka_lista)==0:
+            self.dopiski_slowka_sa.grid_forget()
+        self.dopiski_slowka_sa.bind("<Button-1>",self.klikniety_dopiski_slowka)
+
+        najechany_s=lambda e:self.dopiski_slowka_sa.config(bg='white',
+                        text='---kliknij aby dopisać---')
+        opuszczanie_s=lambda e:self.dopiski_slowka_sa.config(bg='red')
+        self.dopiski_slowka_sa.bind("<Enter>",func=najechany_s)
+        self.dopiski_slowka_sa.bind("<Leave>",func=opuszczanie_s)
+
         self.napis_ilosc_slowek_ulic=TK.Label(font=self.czcionka_small)
         self.aktualizuj_napis_ilosc_wpisow()
         self.napis_ilosc_slowek_ulic.grid(row=0,sticky='NE',ipady=0,ipadx=0,pady=0,padx=0)
@@ -211,6 +239,8 @@ class Okno:
             else:
                 self.pasekstanu.ustaw(ktory=2,tresc="---brakuje pliku minutnika---")
 
+        self.fun_dopiski_okno()
+
         #bindy:
         self.okno.bind("<space>",self.fun_spacja)
         self.okno.bind("<KeyPress-Escape>",self.zamknij)
@@ -235,6 +265,133 @@ class Okno:
         self.okno.bind("<Control-KP_Add>",lambda event:self.czcionke_zmien('+'))
         self.okno.bind("<Control-KP_Subtract>",lambda event:self.czcionke_zmien('-'))
         self.okno.bind("<Control-KP_Multiply>",lambda event:self.czcionke_zmien('*'))
+
+    def klikniety_dopiski_ulice(self,_):
+        ""
+        ile_pominietych=0
+        status=self.logika.dopiski.ulice_status
+        #print('f.klikniety_dopiski_ulice',status)
+
+        if status==KL.dopiski_status.WCZYTALEM_W_LISTE_DOPISKI:
+            #print('można dopisywać do lista_ulic i skasować dopiski_ulice')
+            ulice_lista=self.logika.dopiski.ulice_lista
+            #print('ulice_lista:',ulice_lista)
+            for ulica in ulice_lista:
+                nowa=KL.KWU(ulica)
+                if self.logika.szukaj_wpis(ulica,typ='u') is False:
+                    #print('dodaje brakujący wpis:',nowa)
+                    self.logika.dodaj_wpis(nowa)
+                else:
+                    print('---jest już ulica:',nowa,'pomijam ją')
+                    ile_pominietych+=1
+
+            #print('teraz kasuje plik:',self.logika.dopiski.ulice_plik)
+            OS.remove(self.logika.dopiski.ulice_plik)
+
+            self.logika.dopiski.ulice_status=KL.dopiski_status.DOPISALEM_DO_LISTY_WPISOW
+            self.pasekstanu.ustaw(ktory=1,tresc='pominąłem ulic:'+str(ile_pominietych),na_ile_sek=5)
+
+    def klikniety_dopiski_slowka(self,_):
+        ""
+        ile_pominietych=0
+        status=self.logika.dopiski.slowka_status
+        print('f.klikniety_dopiski_slowka',status)
+
+        if status==KL.dopiski_status.JEZYK_WYKRYTY:
+            #print('można dopisywać do lista_slowek i skasować dopiski_slowka')
+            slowka_lista=self.logika.dopiski.slowka_lista
+            print('slowka_lista:',slowka_lista)
+            for slowko in slowka_lista:
+                #print('slowko',slowko[1],' jezyk=',slowko[0])
+                nowe=None
+                if slowko[0]=='en':
+                    nowe=KL.KWS(slowko[1],'...')
+                else:
+                    nowe=KL.KWS('...',slowko[1])
+                #print('nowe',nowe)
+
+                if self.logika.szukaj_wpis(slowko[1],typ='s') is False:
+                    print('dodaje brakujący wpis:',nowe)
+                    self.logika.dodaj_wpis(nowe)
+                else:
+                    print('---jest już słówko:',nowe,'pomijam je')
+                    ile_pominietych+=1
+
+            #print('teraz kasuje plik:',self.logika.dopiski.slowka_plik)
+            OS.remove(self.logika.dopiski.slowka_plik)
+
+            self.logika.dopiski.slowka_status=KL.dopiski_status.DOPISALEM_DO_LISTY_WPISOW
+            self.pasekstanu.ustaw(ktory=1,
+                        tresc='pominąłem słówek:'+str(ile_pominietych),na_ile_sek=5)
+
+    def fun_dopiski_okno(self):
+        '''
+        jeśli istnieje plik dopiski z niezerową zawartością to:
+            pokaz ikonkę do kliknięcia w oknie
+        '''
+        #print('f.fun_dopiski_okno')
+        def fun_dopiski_okno_watek():
+            ""
+            #print('f.fun_dopiski_okno_watek')
+            while not self.logika.dopiski.zakoncz_watki:
+                uli_sta=self.logika.dopiski.ulice_status
+                slo_sta=self.logika.dopiski.slowka_status
+                #print('ulice_status=',uli_sta,'slowka_status=',slo_sta)
+
+                if uli_sta==KL.dopiski_status.WCZYTALEM_W_LISTE_DOPISKI:
+                    napis='Jest ulic do dopisania: '+str(len(self.logika.dopiski.ulice_lista))
+                    self.dopiski_ulice_sa.config(text=napis)
+
+                if slo_sta==KL.dopiski_status.WCZYTALEM_W_LISTE_DOPISKI:
+                    napis='Jest słówek do dopisania: '+str(len(self.logika.dopiski.slowka_lista))
+                    self.dopiski_slowka_sa.config(text=napis)
+
+                if slo_sta==KL.dopiski_status.WYKRYWAM_JEZYK:
+                    napis='Wykrywam język dla nowych słówek...'
+                    self.dopiski_slowka_sa.config(text=napis)
+
+                if slo_sta==KL.dopiski_status.JEZYK_WYKRYTY:
+                    ile_eng=0
+                    ile_pol=0
+
+                    for ktory in self.logika.dopiski.slowka_lista:
+                        if ktory[0]=='en':
+                            ile_eng+=1
+                        else:
+                            ile_pol+=1
+
+                    napis='Nowych słówek:'+str(len(self.logika.dopiski.slowka_lista))+' '
+                    napis+='ENG:'+str(ile_eng)+' '
+                    napis+='POL:'+str(ile_pol)
+                    self.dopiski_slowka_sa.config(text=napis)
+
+                #jak są wpisy dodane. pokazuje info na 3sek i ukrywa
+                if uli_sta==KL.dopiski_status.DOPISALEM_DO_LISTY_WPISOW:
+                    napis='Dopisałem Nowe Ulice'
+                    self.dopiski_ulice_sa.config(text=napis)
+                    TI.sleep(3)
+                    uli_sta=KL.dopiski_status.UKRYJ_LABEL
+
+                if slo_sta==KL.dopiski_status.DOPISALEM_DO_LISTY_WPISOW:
+                    napis='Dopisałem Nowe Słówka'
+                    self.dopiski_slowka_sa.config(text=napis)
+                    TI.sleep(3)
+                    slo_sta=KL.dopiski_status.UKRYJ_LABEL
+
+                #ukrywanie Labelów
+                if uli_sta==KL.dopiski_status.UKRYJ_LABEL:
+                    self.dopiski_ulice_sa.grid_forget()
+
+                if slo_sta==KL.dopiski_status.UKRYJ_LABEL:
+                    self.dopiski_slowka_sa.grid_forget()
+
+                if slo_sta==KL.dopiski_status.UKRYJ_LABEL and uli_sta==KL.dopiski_status.UKRYJ_LABEL:
+                    self.logika.dopiski.zakoncz_watki=True
+                    #print('dopiski.zakoncz_watki=',self.logika.dopiski.zakoncz_watki)
+                TI.sleep(1)
+
+        watek=TH.Thread(target=fun_dopiski_okno_watek,daemon=True).start()
+        #koniec f.fun_dopiski_okno
 
     def eksportuj_jako_pdf_okno(self,_):
         '''
@@ -342,7 +499,8 @@ class Okno:
         fig,osie=PPL.subplots()
         fig.patch.set_facecolor(wspolny_kolor_tla)
 
-        fig.text(0.55,0.35,'Nauka Słówek',fontsize=65,color='white',ha='center',alpha=0.25,rotation=25)
+        fig.text(0.55,0.35,'Nauka Słówek',fontsize=65,
+                    color='white',ha='center',alpha=0.25,rotation=25)
 
         plotno=MTLB.FigureCanvasTkAgg(fig,master=okienko)
         plotno.get_tk_widget().pack(side="top",fill="both",expand=True)
@@ -638,11 +796,6 @@ class Okno:
             "po edycji potrzeba czyscic wyniki_szukania"
             print('f. __czysc_wyniki_szukania__')
             wyniki_szukania.delete(0,TK.END)
-
-        def __czysc_tytul__():
-            ""
-            print('__czysc_tytul__')
-
 
         def zamknij_okienko(_=None):
             "zamykanie Escape lub ręcznie"
@@ -947,18 +1100,6 @@ class Okno:
 
     def edytuj_wpis_okno(self,str_do_edycji):
         '''
-        jedna metoda wykorzystywana w 2 sytuacjach:
-            przy edycji wpisów podczas nauki
-            i podczas edycji wpisu wyszukanego(ctrl+s)
-
-        rozpoznaje typ argumentu str_do_edycji:
-            -klasa Wpis: wtedy edycja wyszukanego wpisu(czyli tego z argumentu)
-            -klasa TK.Event: edycja bieżacego wpisu(czyli z self.logika.biezacy_wpis)
-
-        enum tryb_edycji wartości: EDYCJA_SLOWKA EDYCJA_ULICY WYSZUKANE_SLOWKO WYSZUKANA_ULICA
-
-        pracuje na wpis_slowko/wpis_ulica i dopiero jak jest zatwierdzenie zmian to przenosi to do self.logika.lista_*
-        orginal zapamietuje w starszy bo potrzebne do self.logika.zmien_wpis()
         '''
         def zamiana_kolejnosci(_=None):
             '''
@@ -979,18 +1120,6 @@ class Okno:
             wpis_slowko.drugi=tmp_pierwszy
 
 
-            '''tmp_pierwszy=self.logika.biezacy_wpis.pierwszy
-            self.logika.biezacy_wpis.pierwszy=self.logika.biezacy_wpis.drugi
-            self.logika.biezacy_wpis.drugi=tmp_pierwszy
-            print('zamieniłem kolejnosc pierwszy/drugi')
-            if tryb_edycji is tryb_edycji.EDYCJA_SLOWKA:
-                #self.entry1_tresc.set(self.logika.biezacy_wpis.pierwszy)
-                #self.entry2_tresc.set(self.logika.biezacy_wpis.drugi)
-                komp.wpis1.delete(0,TK.END)
-                komp.wpis2.delete(0,TK.END)
-            if tryb_edycji is tryb_edycji.WYSZUKANE_SLOWKO:
-                print('powinna być zamiana kolejności WYSZUKANE_SLOWKO')'''
-
         def zamknij_okienko_bez_zmian(_=None):
             '''jak chcesz tylko zamknąć okno
                 czyli porzuca zmiany z wpis_slowko/wpis_ulica
@@ -1000,14 +1129,6 @@ class Okno:
 
         def zamknij_okienko_zastosuj_zmiany(_=None):
             '''
-            zastosowanie i zamykanie okna czyli:
-                z wpis_slowko/wpis_ulica do self.logika.lista_slowek/lista_ulic
-            jeśli edycja jest podfunkcją wyszukiwania to:
-                czysc wyniki_szukania
-            jak odbywa się tylko edycja:
-                ustaw entry1_tresc,entry2_tresc
-
-            na koniec zamknij okno
             '''
             print('f.zamknij_okienko_zastosuj_zmiany',tryb_edycji)
 
@@ -1020,7 +1141,8 @@ class Okno:
 
             elif tryb_edycji is tryb_edycji.EDYCJA_SLOWKA:
                 if komp.wpis1.get()!='' and komp.wpis2.get()!='':
-                    wpis_slowko=KL.KWS(komp.wpis1.get(),komp.wpis2.get(),komp.wpis3.get(),int(komp.wpis4.get()))
+                    wpis_slowko=KL.KWS(komp.wpis1.get(),komp.wpis2.get(),
+                                komp.wpis3.get(),int(komp.wpis4.get()))
                     print('Snowszy=',wpis_slowko)
                 else:
                     print('---Sniemożna podmienić na puste---',tryb_edycji)
@@ -1034,43 +1156,12 @@ class Okno:
 
             elif tryb_edycji is tryb_edycji.WYSZUKANE_SLOWKO:
                 if komp.wpis1.get()!='' and komp.wpis2.get()!='':
-                    wpis_slowko=KL.KWS(komp.wpis1.get(),komp.wpis2.get(),komp.wpis3.get(),int(komp.wpis4.get()))
+                    wpis_slowko=KL.KWS(komp.wpis1.get(),komp.wpis2.get(),
+                                komp.wpis3.get(),int(komp.wpis4.get()))
                     print('Snowszy=',wpis_slowko)
                 else:
                     print('---Sniemożna podmienić na puste---',tryb_edycji)
 
-
-            '''if type (self.logika.biezacy_wpis) is KL.KWU:
-                #print('stwierdzam ze ulica 1',wpis1.get(),'3',wpis3.get(),'4',wpis4.get())
-                if komp.wpis1.get()!='' and komp.wpis2.get()=='' and komp.wpis3.get()!='' and komp.wpis4.get()!='':
-                    komp.nowszy=KL.KWU(komp.wpis1.get(),komp.wpis3.get(),int(komp.wpis4.get()))
-                    #print('Unowszy=',nowszy)
-                    #print('starszy=',starszy)
-                    if komp.starszy!=komp.nowszy:
-                        print('--- udana podmiana---')
-                        self.logika.zmien_wpis(komp.starszy,komp.nowszy)
-                        self.logika.biezacy_wpis=komp.nowszy
-                    self.entry1_tresc.set(self.logika.biezacy_wpis.pierwszy)
-                    self.entry2_tresc.set('')
-                    self.logika.rodzaj_biezacego_wpisu=''
-                else:
-                    print('---niemożna podmienić na puste---')
-            else:
-                #print('stwierdzam ze słówko 1',wpis1.get(),'2',wpis2.get(),
-                #                    '3',wpis3.get(),'4',wpis4.get())
-                if komp.wpis1.get()!='' and komp.wpis2.get()!='' and komp.wpis3.get()!='' and komp.wpis4.get()!='':
-                    komp.nowszy=KL.KWS(komp.wpis1.get(),komp.wpis2.get(),komp.wpis3.get(),int(komp.wpis4.get()))
-                    #print('Snowszy=',nowszy)
-                    #print('starszy=',starszy)
-                    if komp.starszy!=komp.nowszy:
-                        print('--- udana podmiana---')
-                        self.logika.zmien_wpis(komp.starszy,komp.nowszy)
-                        self.logika.biezacy_wpis=komp.nowszy
-                    self.entry1_tresc.set(self.logika.biezacy_wpis.pierwszy)
-                    self.entry2_tresc.set(self.logika.biezacy_wpis.drugi)
-                    self.logika.rodzaj_biezacego_wpisu=''
-                else:
-                    print('---niemożna podmienić na puste---')'''
 
             if tryb_edycji in [tryb_edycji.EDYCJA_ULICY,tryb_edycji.WYSZUKANA_ULICA]:
                 self.logika.zmien_wpis(starszy,wpis_ulica)
@@ -1079,8 +1170,8 @@ class Okno:
                 self.logika.zmien_wpis(starszy,wpis_slowko)
 
             elif tryb_edycji in [tryb_edycji.EDYCJA_SLOWKA,tryb_edycji.EDYCJA_ULICY]:
-                entry1_tresc.set(wpis_slowko.pierwszy)
-                entry1_tresc.set(wpis_slowko.drugi)
+                self.entry1_tresc.set(wpis_slowko.pierwszy)
+                self.entry1_tresc.set(wpis_slowko.drugi)
 
             okienko.destroy()
             if tryb_edycji in [tryb_edycji.WYSZUKANE_SLOWKO,tryb_edycji.WYSZUKANA_ULICA]:
@@ -1090,7 +1181,7 @@ class Okno:
 
         def okresl_tryb_edycji():
             ""
-            tryb_edycji=EN.Enum('tryb_edycji',['EDYCJA_SLOWKA',
+            tryb_edycji=KL.EN.Enum('tryb_edycji',['EDYCJA_SLOWKA',
                                                'EDYCJA_ULICY',
                                                'WYSZUKANE_SLOWKO',
                                                'WYSZUKANA_ULICA'])
@@ -1137,8 +1228,8 @@ class Okno:
                                         command=zamknij_okienko_bez_zmian)
             komp.guzik_zamien=TK.Button(okienko,text='Zamień kolejność',font=self.czcionka_small,
                                         command=zamiana_kolejnosci)
-            komp.guzik_potwierdz=TK.Button(okienko,text='Zatwierdź(Escape)',font=self.czcionka_small,
-                                        command=zamknij_okienko_zastosuj_zmiany)
+            komp.guzik_potwierdz=TK.Button(okienko,text='Zatwierdź(Escape)',
+                        font=self.czcionka_small,command=zamknij_okienko_zastosuj_zmiany)
 
             #gridowanie
             komp.podpis1.grid(row=0,columnspan=3)
@@ -1210,7 +1301,8 @@ class Okno:
                 komp.wpis4.current(self.logika.biezacy_wpis.ile_razy_wylos)
 
                 #poszerzanie dla dużego wpisu
-                dlugosc=max(len(self.logika.biezacy_wpis.pierwszy),len(self.logika.biezacy_wpis.drugi))
+                dlugosc=max(len(self.logika.biezacy_wpis.pierwszy),
+                            len(self.logika.biezacy_wpis.drugi))
                 if dlugosc>30:
                     print('poszerzamS')
                     komp.wpis1.config(width=dlugosc+3)
@@ -1272,66 +1364,6 @@ class Okno:
                     komp.wpis1.config(width=dlugosc+3)
                     komp.wpis2.config(width=dlugosc+3)
 
-
-                '''komp.wpis1.insert(0,self.logika.biezacy_wpis.pierwszy)
-                ilosci=tuple(range(0,self.logika.biezacy_wpis.ile_razy_wylos+11))
-                komp.wpis4['values']=ilosci
-                komp.wpis4.current(self.logika.biezacy_wpis.ile_razy_wylos)
-                komp.starszy=self.logika.biezacy_wpis
-
-                komp.wpis2.config(state=TK.DISABLED)
-                komp.wpis2.config(state=TK.NORMAL)
-
-
-                dlugosc=len(self.logika.biezacy_wpis.pierwszy)
-                #print('Udlugosc wpis1',dlugosc)
-                if dlugosc>30:
-                    print('poszerzamU')
-                    komp.wpis1.config(width=dlugosc+3)
-
-                komp.wpis2.insert(0,self.logika.biezacy_wpis.drugi)
-                s_dly_pie=len(self.logika.biezacy_wpis.pierwszy)
-                s_dly_dru=len(self.logika.biezacy_wpis.drugi)
-                dluzszy=max(s_dly_pie,s_dly_dru)
-                if dluzszy>30:
-                    print('poszerzamS')
-                    komp.wpis1.config(width=dluzszy+3)
-                    komp.wpis2.config(width=dluzszy+3)
-
-                print('Sstr_do_edycji',str_do_edycji)
-                wpis_slowko=KL.KW.str_do_wpis_slowko(str_do_edycji)
-                komp.wpis1.insert(0,wpis_slowko.pierwszy)
-                komp.wpis2.insert(0,wpis_slowko.drugi)
-                dluzszy=max(len(wpis_slowko.pierwszy),len(wpis_slowko.drugi))
-                if dluzszy>30:
-                    print('poszerzamS')
-                    komp.wpis1.config(width=dluzszy+3)
-                    komp.wpis2.config(width=dluzszy+3)
-
-                print('Ustr_do_edycji',str_do_edycji)
-                wpis_ulica=KL.KW.str_do_wpis_ulica(str_do_edycji)
-                komp.wpis1.insert(0,wpis_ulica.pierwszy)
-                dlugosc=len(wpis_ulica.pierwszy)
-                #print('Udlugosc wpis1',dlugosc)
-                if dlugosc>30:
-                    print('poszerzamU')
-                    komp.wpis1.config(width=dlugosc+3)'''
-
-
-                #if self.logika.biezacy_wpis.tryb=='A':
-                #wpis3.current(0) #text=self.logika.biezacy_wpis.tryb)
-                '''wpis3.delete(0,TK.END)
-                wpis3.insert(0,self.logika.biezacy_wpis.tryb)
-                wpis4.delete(0,TK.END)
-                wpis4.insert(0,self.logika.biezacy_wpis.ile_razy_wylos)'''
-
-                #print('stwierdzam ze slowko')
-                #print('pie',s_dly_pie,'dru',s_dly_dru,'Sdluzszy ma',dluzszy)
-                '''wpis3.delete(0,TK.END)
-                wpis3.insert(0,self.logika.biezacy_wpis.tryb)
-                wpis4.delete(0,TK.END)
-                wpis4.insert(0,self.logika.biezacy_wpis.ile_razy_wylos)'''
-
             komp.wpis1.focus_set()
             #ustaw_komponenty_wg_trybu_edycji
 
@@ -1344,7 +1376,7 @@ class Okno:
         wpis_slowko=None
         wpis_ulica=None
         starszy=None
-        nowszy=None
+        #nowszy=None
 
         if tryb_edycji is tryb_edycji.EDYCJA_SLOWKA:
             wpis_slowko=self.logika.biezacy_wpis
