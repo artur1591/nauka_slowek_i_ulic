@@ -524,12 +524,26 @@ class Okno:
 
     def aktualizuj_napis_ilosc_wpisow(self):
         '''
-        w prawym górnym rogu pokazuje ile jest słówek i ile ulic.
-        aktualizowane po dodaj_wpis i kasuj_wpis
+        w prawym górnym rogu pokazuje ile jest słówek i ile ulic wraz z liczebnością w trybach
+        aktualizowane po: dodaj_wpis,kasuj_wpis i ustaw_tryb_biezacego_wpisu
         '''
-        self.napis_ilosc_slowek_ulic.config(
-                    text='ilość słówek: '+str(len(self.logika.lista_slowek))+
-                         '| ilość ulic: '+str(len(self.logika.lista_ulic)))
+        print('f.aktualizuj_napis_ilosc_wpisow')
+
+        dane_slowek='ilość słówek: '+str(len(self.logika.lista_slowek))+' ('
+        ile_slowek_a=str(len([wpis for wpis in self.logika.lista_slowek if wpis.tryb=='A' ]))
+        ile_slowek_b=str(len([wpis for wpis in self.logika.lista_slowek if wpis.tryb=='B' ]))
+        ile_slowek_c=str(len([wpis for wpis in self.logika.lista_slowek if wpis.tryb=='C' ]))
+        dane_slowek+='A:'+ile_slowek_a+',B:'+ile_slowek_b+',C:'+ile_slowek_c+')'
+
+
+        dane_ulic='ilość ulic: '+str(len(self.logika.lista_ulic))+' ('
+        ile_ulic_a=str(len([wpis for wpis in self.logika.lista_ulic if wpis.tryb=='A' ]))
+        ile_ulic_b=str(len([wpis for wpis in self.logika.lista_ulic if wpis.tryb=='B' ]))
+        ile_ulic_c=str(len([wpis for wpis in self.logika.lista_ulic if wpis.tryb=='C' ]))
+        dane_ulic+='A:'+ile_ulic_a+',B:'+ile_ulic_b+',C:'+ile_ulic_c+')'
+
+
+        self.napis_ilosc_slowek_ulic.config(text=dane_slowek+' | '+dane_ulic)
 
     def zerowanie_wpisow(self,event):
         '''
@@ -755,6 +769,7 @@ class Okno:
             print('poprawiony tryb=',self.logika.biezacy_wpis)
             self.pasekstanu.ustaw(ktory=1,tresc='zmieniłem tryb bieżacego wpisu na '+na_jaki,
                                     na_ile_sek=3)
+            self.aktualizuj_napis_ilosc_wpisow()
         else:
             self.pasekstanu.ustaw(ktory=1,tresc='już jest ten tryb',na_ile_sek=3)
 
