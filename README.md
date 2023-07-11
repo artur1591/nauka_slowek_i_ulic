@@ -2,32 +2,29 @@
 # Co robi program?
 	Program losuje słówka i/lub ulice w celu treningu głowy.
 	Spośród najrzadziej wylosowanych losowane są kolejne.
-	Klawisz Spacja pokazuje następny wpis lub tłumaczenie (podstawowy klawisz programu).
+	Klawisz **Spacja** pokazuje następny wpis lub tłumaczenie (podstawowy klawisz programu).
 
 # Uruchomienie programu:
-	./main.py (prawa uruchamiania trzeba nadać) lub python main.py
-	opcjonalny argument: liczba od 0 do 100 oznacza procent_slowek_reszta_ulic
+	`./main.py` (prawa uruchamiania trzeba nadać) lub `python main.py`
+	opcjonalny argument: liczba od 0 do 100 oznacza *procent_slowek_reszta_ulic*
 		czyli 100 oznacza tylko slowka a 0 oznacza tylko ulice
 
 # Obsługa:
 	Skróty klawiszowe:
-		<!-- Tables -->
-		|klawisz      |działania                   |
-		|-------------|----------------------------|
-		|spacja       |następny wpis(lub znaczenie)|
-		ctrl+q/Escape - wyjście z potwierdzeniem
+		- spacja - następny wpis(lub znaczenie)
+		- ctrl+q/Escape - wyjście z potwierdzeniem
 		CRUD:
-			F2 szukanie wpisów
-			F3 dodawanie nowych wpisów
-			F4 edycja bieżącego wpisu
-			ctrl+a/b/c ustaw tryb bieżącego wpisu
-			ctrl+0 - cofnij ilość wylosowań bieżącego wpisu
-			ctrl+z zerowanie ilości wylosowań/trybów dla słówek/ulic
-		ctrl+t zmień bieżący tryb
-		ctrl+s pokaż statystyki
-		ctrl+p eksportuj jako pdf ulice/słówka
-		ctrl+*/+/- zerowanie/powiększanie/zmniejszanie rozmiaru czcionki
-		F1 - pokaż tą pomoc
+			- F2 szukanie wpisów
+			- F3 dodawanie nowych wpisów
+			- F4 edycja bieżącego wpisu
+			- ctrl+a/b/c ustaw tryb bieżącego wpisu
+			- ctrl+0 - cofnij ilość wylosowań bieżącego wpisu
+			- ctrl+z zerowanie ilości wylosowań/trybów dla słówek/ulic
+		- ctrl+t zmień bieżący tryb
+		- ctrl+s pokaż statystyki
+		- ctrl+p eksportuj jako pdf ulice/słówka
+		- ctrl+*/+/- zerowanie/powiększanie/zmniejszanie rozmiaru czcionki
+		- F1 - pokaż tą pomoc
 
 # Dopiski słówek i ulic:
 	Można utworzyć pliki dopiski_ulice oraz dopiski_slowka zawierające nowe wpisy(w ustawieniach określa się nazwy tych plików).
