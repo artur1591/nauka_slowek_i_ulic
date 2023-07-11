@@ -792,10 +792,26 @@ class Okno:
             F1 - pokaż tą pomoc
         ''')
 
-    @staticmethod
-    def czcionke_zmien(jaka_operacja):
-        "operacje to +  -   *"
-        print('czcionke_zmien.operacja',jaka_operacja)
+    def czcionke_zmien(self,jaka_operacja):
+        '''
+        operacje to +  -   *
+
+        czcionka.czcionka_big jest zmieniana a zmiany stosowane dla komponentów:
+            self.entry1 i self.entry2
+        '''
+        if jaka_operacja=='+':
+            if self.czcionka_big['size']<=90:
+                self.czcionka_big['size']+=1
+
+        elif jaka_operacja=='-':
+            if self.czcionka_big['size']>30:
+                self.czcionka_big['size']-=1
+
+        elif jaka_operacja=='*':
+            self.czcionka_big['size']=70
+
+        self.entry1.config(font=self.czcionka_big)
+        self.entry2.config(font=self.czcionka_big)
 
 
     #4 metody zarządzające wpisami
