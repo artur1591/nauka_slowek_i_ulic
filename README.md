@@ -7,7 +7,11 @@
 # Uruchomienie programu:
 	`./main.py` (prawa uruchamiania trzeba nadać) lub `python main.py`
 	opcjonalny argument: liczba od 0 do 100 oznacza *procent_slowek_reszta_ulic*
-		czyli 100 oznacza tylko slowka a 0 oznacza tylko ulice
+
+# Uruchomienie programu:
+	./main.py (prawa uruchamiania trzeba nadać) lub python main.py
+	opcjonalny argument: liczba od 0 do 100 oznacza procent_slowek_reszta_ulic
+	czyli 100 oznacza tylko slowka a 0 oznacza tylko ulice
 
 # Obsługa:
 	Skróty klawiszowe:
